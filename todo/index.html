@@ -24,11 +24,13 @@
                         <div class="panel-heading">
                             <i class="fa fa-desktop"></i>
                             <h3>Todo List</h3>
+                            <p>Type & press enter to add. Click on item to edit and then press enter</p>
                         </div>
 						<table class="table">
 					    	<tr v-for="i in todos">
-					    		<td class="col-md-10 hvr-bounce-in">{{i.title}}</td>
-					    		<td class="col-md-2"><button type="button" class="btn btn-danger" v-on:click="removeTodo($index)">Done</button></td>
+					    		<td class="col-md-10 hvr-bounce-in" ><todo-component v-bind:todo="i" ></todo-component></td>
+					    		<td class="col-md-2">
+                                <button type="button" class="btn btn-danger" v-on:click="removeTodo($index)">Done</button></td>
 					    	</tr>
 					    </table>
 
