@@ -12,47 +12,56 @@
 <br><br><br>
         <div class="container ">
             <div class="row">
-                 <div class="col-md-8 text-center">
+                 <div class="col-md-9 text-center">
                     <div class="panel panel-success panel-pricing">
-                        <div class="panel-heading">
-                            <i class="fa fa-desktop"></i>
-                            <h3><!-- SGPA Calculator --></h3>
+                        <div class="panel-heading" style="background-color: #4c4c4c; color: white;">
+                            <h4><span>Calculate your result</span></h4>
                         </div>
                         <div class="panel-body">
-                          
-                        <h3 id="result"></h3>
+                            <h3><span class="label label-info" id="result_cgpa"></span></h3>
+                            <h3><span class="label label-info" id="result"></span></h3>
                           <div class="row">
-                             <div class="col-md-4">
+                             <div class="col-md-6">
+                                 <h3>Current CGPA</h3>
                               <table class="table table-bordered" id="">
                               <thead>
+                              <tr>
+                                  <td>
+                                      <h4>How many semester completed?</h4>
+                                  </td>
+                                  <td>
+                                      <input type="number" max="12" min="1" id="total_semesters" class="form-control" name="total_semesters">
+                                  </td>
+                              </tr>
                                 <tr>
-                                  <th>CGPA</th>
-                                  <th>SGPA</th>
+                                  <th><h4>CGPA</h4></th>
+                                  <th><h4>SGPA</h4></th>
                                 </tr>
                               </thead>
                               <tbody>
                                 <tr>
                                   <td>
-                                   <input type="text" class="form-control" name="cgpa">
+                                   <input type="text" id="previous_cgpa" class="form-control" name="cgpa">
                                   </td>
                                   <td>
-                                    <input type="text" class="form-control" name="sgpa">
+                                    <input type="text" id="current_sgpa" class="form-control" name="sgpa">
                                   </td>
                                 </tr>
                                 <tr></tr>
                               </tbody>
                             </table>
-                              <button type="button" value="submit" class="btn btn-default" id="">Show</button>
+                              <button type="button" id="current_cgpa_show" value="submit" class="btn btn-info btn-sm">Show</button>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-1">
                               
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <h3>Calculate SGPA</h3>
                                 <table class="table table-bordered" id="form_table">
                               <thead>
                                 <tr>
-                                  <th>Credit</th>
-                                  <th>Grade</th>
+                                  <th><h4>Credit</h4></th>
+                                  <th><h4>Grade</h4></th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -69,14 +78,22 @@
                                       <option value="4.00">A+</option>
                                       <option value="3.75">A</option>
                                       <option value="3.50">A-</option>
+                                      <option value="3.25">B+</option>
+                                      <option value="3.00">B</option>
+                                      <option value="2.75">B-</option>
+                                      <option value="2.50">C+</option>
+                                      <option value="2.25">C</option>
+                                      <option value="2.00">D</option>
+                                      <option value="0.00">F</option>
+                                      <option value="0.00">I</option>
                                   </select>
                                   </td>
                                 </tr>
                                 <tr></tr>
                               </tbody>
                             </table>
-                            <button type="button" class="btn btn-primary" id="addRow">Add</button>
-                          <button type="button" value="submit" class="btn btn-default" id="showValues">Show</button>
+                            <button type="button" class="btn btn-primary btn-sm" id="addRow">More Subject</button>
+                          <button type="button" value="submit" class="btn btn-info btn-sm" id="showValues">Show</button>
                             </div>
 
                           </div>
@@ -84,10 +101,10 @@
                        
                     </div>
                 </div>
-                <div class="col-md-4 text-center">
+                <div class="col-md-3 text-center">
                     <table class="table table-bordered">
                       <thead>
-                        <tr>
+                        <tr style="background-color: #4c4c4c; color: white;">
                           <th>#</th>
                           <th>Range</th>
                           <th>Grade</th>
@@ -95,66 +112,67 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
+                        <tr  style="background-color: #0083ff">
                           <th scope="row">1</th>
                           <td>80% to 100%</td>
                           <td>A+</td>
                           <td>4.00</td>
                         </tr>
-                        <tr>
+                        <tr   style="background-color: #3b9cf7" >
                           <th scope="row">2</th>
                           <td>75% to 79%</td>
                           <td>A</td>
                           <td>3.75</td>
                         </tr>
-                        <tr>
+                        <tr style="background-color: #79b7f2" >
                           <th scope="row">3</th>
                           <td>70% to 74%</td>
                           <td>A-</td>
                           <td>3.50</td>
                         </tr>
-                        <tr>
+                        <tr style="background-color: #00fce7">
                           <th scope="row">4</th>
                           <td>65% to 69%</td>
                           <td>B+</td>
                           <td>3.25</td>
                         </tr>
-                        <tr>
+                        <tr style="background-color: #57f2e5">
                           <th scope="row">5</th>
                           <td>60% to 64%</td>
                           <td>B</td>
                           <td>3.00</td>
-                        </tr><tr>
-                          <th scope="row">6</th>
+                        </tr>
+                        <tr style="background-color: #89d3cc">
+                            <th scope="row">6</th>
                           <td>55% to 59%</td>
                           <td>B-</td>
                           <td>2.75</td>
                         </tr>
-                        <tr>
+                        <tr style="background-color: #d0ff00">
                           <th scope="row">7</th>
                           <td>50% to 54%</td>
                           <td>C+</td>
                           <td>2.50</td>
                         </tr>
-                        <tr>
+                        <tr style="background-color: #cae25d">
                           <th scope="row">8</th>
                           <td>45% to 49%</td>
                           <td>C</td>
                           <td>2.25</td>
                         </tr>
-                        <tr>
+                        <tr style="background-color: #ed5a5a">
                           <th scope="row">9</th>
                           <td>40% to 44%</td>
                           <td>D</td>
                           <td>2.00</td>
                         </tr>
-                        <tr>
+                        <tr style="background-color: #f43030">
                           <th scope="row">10</th>
                           <td>Less than 40%</td>
                           <td>F</td>
                           <td>0.00</td>
                         </tr>
-                        <tr>
+                        <tr style="background-color: #b3b7b4">
                           <th scope="row">11</th>
                           <td>Absent</td>
                           <td>I</td>
