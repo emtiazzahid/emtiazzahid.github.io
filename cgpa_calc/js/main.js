@@ -5,6 +5,7 @@ $('#form_table tbody tr:last').after('' +
             '<select name="credit[]" id="credit" class="form-control">'+
                 '<option value="0.75">0.75</option>'+
                 '<option value="1.50">1.50</option>'+
+                '<option value="2.00">2.00</option>'+
                 '<option value="3.00">3.00</option>'+
              '</select>'+
          '</td>'+
