@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 260" width="640" height="260">
+  <!-- Two ways to put React in front of Laravel. Pick per screen, not per app. -->
+
+  <text class="dg-eyebrow" x="0" y="14">ISLANDS</text>
+  <text class="dg-eyebrow" x="352" y="14">SPA</text>
+  <line class="dg-rule" x1="0" y1="26" x2="288" y2="26" />
+  <line class="dg-rule" x1="352" y1="26" x2="640" y2="26" />
+
+  <!-- the divider -->
+  <line class="dg-soft" x1="320" y1="0" x2="320" y2="238" />
+
+  <g class="dg-mono">
+    <text x="0" y="52">Blade renders the page</text>
+    <text x="352" y="52">Blade renders one div</text>
+  </g>
+  <g class="dg-text dg-muted">
+    <text x="0" y="76">React mounts into named divs</text>
+    <text x="352" y="76">React owns routing from there</text>
+    <text x="0" y="100">Session cookie, CSRF token</text>
+    <text x="352" y="100">Sanctum or a bearer token</text>
+    <text x="0" y="124">Server holds the auth state</text>
+    <text x="352" y="124">Client holds the auth state</text>
+  </g>
+
+  <line class="dg-soft" x1="0" y1="150" x2="288" y2="150" />
+  <line class="dg-soft" x1="352" y1="150" x2="640" y2="150" />
+
+  <text class="dg-mono dg-muted" x="0" y="174">Good for: an admin table inside</text>
+  <text class="dg-mono dg-muted" x="0" y="192">an otherwise boring CRUD app</text>
+  <text class="dg-mono dg-muted" x="352" y="174">Good for: one screen users live</text>
+  <text class="dg-mono dg-muted" x="352" y="192">in all day</text>
+
+  <line class="dg-rule" x1="0" y1="222" x2="640" y2="222" />
+  <text class="dg-mono dg-accent" x="0" y="246">Mixing both in one app is fine. Mixing both on one page is not.</text>
+</svg>

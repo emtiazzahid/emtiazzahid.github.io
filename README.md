@@ -23,7 +23,8 @@ npm run dev
 ## Writing a post
 
 Add a Markdown file to `src/content/writing/`. The filename becomes the URL:
-`hello-world.md` → `/writing/hello-world/`.
+`hello-world.md` → `/writing/hello-world/`. Use `.mdx` instead if the post needs
+a diagram.
 
 ```markdown
 ---
@@ -48,15 +49,52 @@ Body starts here. `##` for section headings, fenced blocks for code.
 Push to `main` and it's live in about a minute. Home shows the newest 3 posts,
 `/writing/` groups everything by year, and the RSS feed rebuilds itself.
 
+## Diagrams
+
+Posts illustrate with hand-authored SVG in `src/diagrams/`, not bitmaps. Rename the
+post to `.mdx`, import the component once, and place figures anywhere in the body:
+
+```mdx
+import Figure from '../../components/Figure.astro';
+
+<Figure name="queue-retry" caption="What the reader should take from it." />
+```
+
+`name` is the filename in `src/diagrams/` without the extension. A typo throws at
+build time with the list of valid names, so a broken figure never reaches the site.
+
+The SVG is **inlined**, not loaded through `<img>` — that's what lets it use
+IBM Plex Mono and the `:root` tokens. So diagrams carry classes, never hex codes:
+
+| Class | Use |
+| --- | --- |
+| `dg-eyebrow` | 10px mono, letterspaced, muted — section labels |
+| `dg-mono` / `dg-text` | 11.5px mono / 13px body, ink |
+| `dg-muted` / `dg-accent` | recolour any text |
+| `dg-stroke` / `dg-rule` / `dg-soft` | ink 1.5px / strong hairline / soft hairline |
+| `dg-accent-stroke` | the one line that carries the argument |
+| `dg-dash` | dashes any stroke |
+
+Draw on a 640-wide viewBox so the figure fills the 640px prose column exactly. Below
+540px the canvas scrolls rather than shrinking the labels out of legibility.
+
+To preview every diagram at once, render a contact sheet — useful when adjusting the
+shared classes:
+
+```bash
+node -e "require('fs').writeFileSync('/tmp/sheet.html','<style>'+require('fs').readFileSync('src/styles/global.css')+'</style>'+require('fs').readdirSync('src/diagrams').map(f=>'<div class=figure__canvas>'+require('fs').readFileSync('src/diagrams/'+f)+'</div>').join(''))"
+```
+
 ## Structure
 
 ```
 src/
   consts.js              site config — URL, email, booking link, accent
-  content/writing/       the posts
+  content/writing/       the posts (.md, or .mdx when they carry a diagram)
   content.config.ts      frontmatter schema
+  diagrams/              hand-authored SVG, inlined by <Figure>
   layouts/BaseLayout     html shell, SEO tags, nav + footer
-  components/            Nav, Footer, PostRow
+  components/            Nav, Footer, PostRow, Figure
   pages/                 /, /about, /contact, /writing, /writing/[slug], /rss.xml, 404
   styles/global.css      all styling; design tokens live in :root
   lib/posts.ts           sorting, year grouping, date + reading-time formatting

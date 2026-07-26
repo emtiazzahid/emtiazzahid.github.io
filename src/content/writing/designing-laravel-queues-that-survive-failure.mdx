@@ -4,6 +4,8 @@ date: 2026-07-12
 lede: Most queue bugs aren't queue bugs. They're jobs written as if the happy path were the only path.
 ---
 
+import Figure from '../../components/Figure.astro';
+
 A queued job is a promise you make to your future self: this work will happen, eventually, possibly twice, possibly on a server that just rebooted. Once you accept that framing, most of the patterns below stop feeling like ceremony and start feeling like the minimum.
 
 ## Jobs are contracts
@@ -47,6 +49,15 @@ public function retryUntil(): DateTime
 ```
 
 `$backoff` as an array gives you a real schedule rather than a single flat delay: fast retries absorb a blip, slow ones wait out an outage. `retryUntil()` puts a wall clock on the whole thing, which matters for work that stops being useful once it's stale — a "your export is ready" email an hour late is fine, a fraud check an hour late is not.
+
+Worth knowing that these two are separate ceilings and the earlier one wins:
+
+<Figure
+  name="queue-retry"
+  caption="With this backoff, the fifth attempt would land past the hour. It never runs — retryUntil() closes the window first, and failed() fires there instead."
+/>
+
+I've watched people set `$tries = 5` and assume they'll get five attempts. They get however many fit.
 
 Not every failure deserves a retry. A 500 from an upstream API is worth trying again; a 422 means the payload is wrong and will be wrong forever. Catching the second kind and calling `$this->fail($e)` moves it straight to the failed table instead of burning four more attempts on a certainty.
 

@@ -1,0 +1,38 @@
+---
+/**
+ * Inlines a diagram from src/diagrams/ into the article.
+ *
+ * Inlined rather than <img src>, on purpose: an SVG loaded through <img> is a
+ * separate document, so it cannot see the page's IBM Plex Mono or the :root
+ * design tokens. Inline, the diagrams inherit both and stay in the type system.
+ */
+const diagrams = import.meta.glob<string>('../diagrams/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+
+interface Props {
+  /** Filename without extension, e.g. "queue-retry" for src/diagrams/queue-retry.svg */
+  name: string;
+  /** Mono line under the diagram. Also used as the accessible label. */
+  caption: string;
+}
+
+const { name, caption } = Astro.props;
+
+const svg = diagrams[`../diagrams/${name}.svg`];
+
+if (!svg) {
+  throw new Error(
+    `Figure: no diagram named "${name}". Available: ${Object.keys(diagrams)
+      .map((k) => k.replace('../diagrams/', '').replace('.svg', ''))
+      .join(', ')}`,
+  );
+}
+---
+
+<figure class="figure" role="img" aria-label={caption}>
+  <div class="figure__canvas" set:html={svg} />
+  <figcaption class="figure__caption">{caption}</figcaption>
+</figure>

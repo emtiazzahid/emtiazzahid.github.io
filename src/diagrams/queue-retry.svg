@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 196" width="640" height="196">
+  <!-- $tries and retryUntil() are independent ceilings; the earlier one wins. -->
+
+  <text class="dg-eyebrow" x="0" y="16">$BACKOFF = [10, 30, 120, 600]</text>
+
+  <!-- timeline -->
+  <line class="dg-rule" x1="0" y1="112" x2="640" y2="112" />
+
+  <!-- attempts that actually fire -->
+  <g class="dg-stroke">
+    <line x1="8" y1="100" x2="8" y2="124" />
+    <line x1="96" y1="100" x2="96" y2="124" />
+    <line x1="204" y1="100" x2="204" y2="124" />
+    <line x1="340" y1="100" x2="340" y2="124" />
+  </g>
+  <g class="dg-mono" text-anchor="middle">
+    <text x="8" y="92">1</text>
+    <text x="96" y="92">2</text>
+    <text x="204" y="92">3</text>
+    <text x="340" y="92">4</text>
+  </g>
+
+  <!-- the waits between them -->
+  <g class="dg-mono dg-muted" text-anchor="middle">
+    <text x="52" y="142">10s</text>
+    <text x="150" y="142">30s</text>
+    <text x="272" y="142">2m</text>
+    <text x="404" y="142">10m</text>
+  </g>
+
+  <!-- the hour ceiling -->
+  <line class="dg-accent-stroke dg-dash" x1="468" y1="46" x2="468" y2="158" />
+  <text class="dg-mono dg-accent" x="468" y="38" text-anchor="middle">retryUntil() — 1 hour</text>
+  <text class="dg-mono dg-accent" x="468" y="176" text-anchor="middle">failed() runs here</text>
+
+  <!-- the attempt the schedule never reaches -->
+  <line class="dg-ghost dg-dash" x1="580" y1="100" x2="580" y2="124" />
+  <text class="dg-mono dg-muted" x="580" y="92" text-anchor="middle">5</text>
+  <text class="dg-mono dg-muted" x="580" y="142" text-anchor="middle">never fires</text>
+</svg>

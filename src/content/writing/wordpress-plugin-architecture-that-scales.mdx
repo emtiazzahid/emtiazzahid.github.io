@@ -1,0 +1,90 @@
+---
+title: A WordPress plugin architecture that scales past one client
+date: 2026-05-28
+lede: The folder layout that stops a one-off client plugin from turning into three forks you maintain by hand.
+---
+
+import Figure from '../../components/Figure.astro';
+
+Client plugins don't start badly. They start as one file of `add_action` calls that does exactly what one client asked for, and at that size a single file is the correct answer. The trouble arrives at the third client, when you have three copies of the same idea, each with a different bug, and a fix has to be applied by hand in three places while you try to remember which copy had the weird invoice rounding.
+
+What follows is the arrangement I've landed on after doing that badly enough times. It is not a framework. It's one rule with some furniture around it.
+
+## Only the top layer knows it's WordPress
+
+The rule: WordPress-specific code lives in a thin band at the edge, and the code that does the actual work never mentions it.
+
+<Figure
+  name="plugin-layers"
+  caption="Adapters are the only files that get rewritten per client. Everything below them is the same code on every install."
+/>
+
+In practice an adapter is embarrassingly small:
+
+```php
+add_action('woocommerce_order_status_completed', function (int $orderId): void {
+    $order = wc_get_order($orderId);
+
+    app(SyncOrderToErp::class)->handle(
+        new OrderPayload(
+            reference: $order->get_order_number(),
+            lines: array_map(LineItem::fromWooItem(...), $order->get_items()),
+            total: (float) $order->get_total(),
+        )
+    );
+});
+```
+
+Six lines, and none of the interesting logic is in them. `SyncOrderToErp` takes a `OrderPayload` and knows nothing about Woo, hooks, or the request. That's the whole trick. When the next client runs a different commerce plugin, I write a different twelve-line adapter and reuse the sync wholesale.
+
+The test for whether you've drawn the line correctly: can you instantiate the domain class in a plain PHPUnit test without bootstrapping WordPress? If yes, the line is real. If you have to load `wp-load.php` to test your invoice calculator, the line is decorative.
+
+## Configuration is read once, at the edge
+
+`get_option()` scattered through a codebase is the same problem as `$_GET` scattered through a codebase, and it hurts for the same reason: you can no longer tell what a class needs by looking at its constructor.
+
+I read settings once, in the bootstrap file, and hand them down as a typed object:
+
+```php
+final class Settings
+{
+    public function __construct(
+        public readonly string $erpEndpoint,
+        public readonly string $apiKey,
+        public readonly bool $dryRun,
+    ) {}
+
+    public static function fromOptions(): self
+    {
+        $stored = get_option('acme_erp_settings', []);
+
+        return new self(
+            erpEndpoint: $stored['endpoint'] ?? '',
+            apiKey: $stored['api_key'] ?? '',
+            dryRun: (bool) ($stored['dry_run'] ?? false),
+        );
+    }
+}
+```
+
+One function knows the option key. One function knows the defaults. Everything else takes a `Settings` and can be constructed in a test with three arguments.
+
+## The part everyone skips
+
+Activation, deactivation, and schema changes. Not glamorous, and the source of most of the "it works on staging" tickets I've had to answer.
+
+Two things that have saved me repeatedly. First, store a schema version in an option and run migrations from a numbered list on `plugins_loaded`, not on activation — activation doesn't fire when a plugin is updated by copying files over it, which is how a surprising number of sites get updated. Second, make every migration re-runnable. `dbDelta()` is more forgiving than raw `ALTER TABLE`, but the real safety comes from writing migrations that check before they change.
+
+Deactivation should unschedule your cron events. If it doesn't, the site keeps trying to run a hook that no longer exists, and you get a WP-Cron error in a log nobody reads until something else breaks.
+
+## Vendor prefixing, or don't use Composer
+
+If you pull a library through Composer and ship it in a plugin, you are gambling that no other plugin on that site ships a different version of the same library. Sometimes it's Guzzle. Sometimes it's a PSR interface. The failure is a fatal error on a site you don't control, triggered by a plugin you've never heard of.
+
+Either keep dependencies to zero, or run the vendor directory through a prefixer as part of the build. Both are defensible. Shipping an unprefixed `vendor/` is not, and I say that as someone who did it for two years and got away with it right up until I didn't.
+
+## When this is too much
+
+For a plugin that adds a shortcode and 200 lines of markup, all of the above is overhead with no payoff. One file, a couple of functions, ship it. The architecture earns its keep when there are multiple clients, or an integration with a system that will change under you, or a calculation someone will eventually argue about in an email thread.
+
+The signal I use: the second time I copy a plugin folder and start editing the copy, I stop and pull the domain out. Not the first time — the first copy might be the last one. The second copy is the codebase telling you the shape was wrong.

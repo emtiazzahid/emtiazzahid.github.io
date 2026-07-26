@@ -1,0 +1,78 @@
+---
+title: API versioning in Laravel, the boring way
+date: 2025-09-05
+lede: URL versioning, a copied route file, and no clever middleware — why the dullest option keeps winning.
+---
+
+import Figure from '../../components/Figure.astro';
+
+There's a version of this argument where content negotiation wins. `Accept: application/vnd.acme.v2+json` is more correct than `/api/v2`, in the sense that a URL is supposed to identify a resource and not a representation of it. I've read the posts. I've agreed with the posts.
+
+Then a client emails asking why their integration broke, and you cannot answer without asking them what header they sent, and they don't know, because their developer left. Meanwhile the URL version is sitting right there in every log line, every error report, and every support message you'll ever receive.
+
+Put the version in the URL.
+
+## Copy the route file
+
+The instinct after `routes/api/v1.php` exists is to make v2 a diff against it — inherit the controllers, override the two that changed, share the resources. Every time I've done that, the shared layer accumulated `if ($version === 2)` and became the most dangerous file in the codebase, because a change there silently altered the contract of an API somebody's payroll integration depended on.
+
+So: copy it. All of it.
+
+<Figure
+  name="api-versions"
+  caption="Routes, controllers, and resources are duplicated per version on purpose. Only the domain layer is shared, and it doesn't know versions exist."
+/>
+
+```php
+// routes/api.php
+Route::prefix('v1')
+    ->name('api.v1.')
+    ->middleware('api')
+    ->group(base_path('routes/api/v1.php'));
+
+Route::prefix('v2')
+    ->name('api.v2.')
+    ->middleware('api')
+    ->group(base_path('routes/api/v2.php'));
+```
+
+Yes, it's duplication. That's the feature. The v1 controller is frozen — the only commits it takes are bug fixes — and freezing it is only possible because nothing else depends on its internals. You get to delete the entire folder on sunset day instead of unpicking conditionals.
+
+What's shared is the layer underneath: `app/Services`, the models, the domain rules. Those have no version namespace and no idea a v1 exists. If a domain change would break v1's output, that's a signal about the domain change, not an invitation to add a flag.
+
+## Resources are the contract
+
+The API resource is the only place allowed to decide what a payload looks like. Not the model's `$appends`, not a global JSON serializer, not a trait shared between versions.
+
+```php
+// app/Http/Resources/V1/OrderResource.php
+public function toArray($request): array
+{
+    return [
+        'id'       => $this->id,
+        'total'    => number_format($this->total_cents / 100, 2, '.', ''),
+        'status'   => $this->status->value,
+        'customer' => $this->customer->name,
+    ];
+}
+```
+
+If someone adds a cast to the model, v1's output does not move, because v1 spells out every field. Verbose beats clever here. The whole point of a version is that its shape is nailed down, and you can't nail down a shape that's assembled by inheritance three files away.
+
+## Deprecation is a date, not a vibe
+
+"We'll drop v1 eventually" means never. Give it a date, publish the date, and instrument the thing so the date is defensible:
+
+```php
+Route::prefix('v1')->middleware(['api', 'deprecated:2026-03-31'])->group(...);
+```
+
+The middleware does two jobs. It adds a `Sunset` header — [RFC 8594](https://www.rfc-editor.org/rfc/rfc8594), an actual standard, though in practice no client reads it — and it logs the calling token, endpoint, and timestamp. That log is what turns the conversation from "please migrate" into "you made 12 calls to `/v1/orders` last month, all from one cron job, here's the v2 equivalent." One of those emails gets answered.
+
+Only after usage goes flat do you delete the folder. If it doesn't go flat, you learn something about a client you were about to break.
+
+## When not to version at all
+
+If the only consumer is a frontend you deploy in the same pipeline as the backend, versioning is ceremony. Ship them together, change both in one PR, and use the fact that you control both ends — that's the actual advantage of a monolith and it's silly to give it up for a URL prefix nobody outside your team will ever type.
+
+Versioning starts earning its keep the moment there's a consumer you can't deploy. A mobile app in review. A partner's cron job. A customer's Zapier. The question isn't how many consumers you have, it's how many you can't redeploy on a Tuesday afternoon.

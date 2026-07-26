@@ -1,0 +1,131 @@
+---
+title: Vue composables I reach for in every project
+date: 2026-04-03
+lede: Three small composables that survive contact with real projects, and the extraction rule that keeps the rest out.
+---
+
+import Figure from '../../components/Figure.astro';
+
+Composables are cheap to write, which is the problem. Every Vue codebase I've inherited has a `composables/` folder with fourteen files in it, of which three are used more than once and one is a `ref` with extra steps.
+
+These are the ones that have earned a place in every project, plus the rule I use to keep the folder from filling up again.
+
+## The request one
+
+Every app needs loading, error, and data as one unit, because those three states are never actually independent. Writing them out by hand in each component is how you end up with a screen that shows a spinner and an error at the same time.
+
+```js
+export function useRequest(fn) {
+  const data = ref(null)
+  const error = ref(null)
+  const pending = ref(false)
+  let controller
+
+  async function run(...args) {
+    controller?.abort()
+    controller = new AbortController()
+
+    pending.value = true
+    error.value = null
+
+    try {
+      data.value = await fn(...args, { signal: controller.signal })
+    } catch (e) {
+      if (e.name !== 'AbortError') error.value = e
+    } finally {
+      pending.value = false
+    }
+  }
+
+  onScopeDispose(() => controller?.abort())
+
+  return { data, error, pending, run }
+}
+```
+
+The abort handling is the part worth copying. Without it, a user who types fast in a search box gets results from whichever request happens to finish last, which is not the one they're waiting for. I've debugged that bug twice, in two different codebases, and both times it presented as "the search is flaky."
+
+Note it doesn't fetch on creation. Auto-fetching composables are convenient for about a week and then you need one that doesn't, and now there's a `immediate: false` option, and then a `watch` option, and eventually you've written a data library nobody asked for.
+
+## The persistence one
+
+`useLocalStorage` is the most-written composable in the world and most versions of it are subtly wrong in the same way: they read on init and write on change, and never consider that the stored value might be garbage.
+
+```js
+export function useStored(key, fallback) {
+  const value = ref(read())
+
+  function read() {
+    try {
+      const raw = localStorage.getItem(key)
+      return raw === null ? fallback : JSON.parse(raw)
+    } catch {
+      return fallback
+    }
+  }
+
+  watch(value, (v) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(v))
+    } catch {
+      // Private mode, quota, or a Safari thing. Losing a UI preference
+      // is not worth throwing over.
+    }
+  }, { deep: true })
+
+  return value
+}
+```
+
+Both `try` blocks are there because of production. Stored JSON goes stale when you change a shape and forget that browsers kept the old one; `localStorage.setItem` throws in private mode on some Safari versions and in quota-exhausted iframes. Neither should take a page down for a saved table filter.
+
+## The unsaved-changes one
+
+A form-dirty guard, wired to both the router and the browser. It's the composable that clients notice, in the sense that they notice its absence loudly.
+
+```js
+export function useUnsavedGuard(isDirty, message) {
+  const onBeforeUnload = (e) => {
+    if (!isDirty.value) return
+    e.preventDefault()
+    e.returnValue = ''
+  }
+
+  window.addEventListener('beforeunload', onBeforeUnload)
+  onScopeDispose(() => window.removeEventListener('beforeunload', onBeforeUnload))
+
+  onBeforeRouteLeave(() => isDirty.value ? confirm(message) : true)
+}
+```
+
+Registering both is the point. `beforeunload` covers tab close and hard navigation; the router guard covers everything inside the app. Ship one without the other and you get a bug report that only reproduces on whichever half you missed.
+
+## Where you call it matters more than what it does
+
+This is the composable failure mode that costs the most time to find, so it's worth a diagram:
+
+<Figure
+  name="composable-scope"
+  caption="A composable called during setup() is cleaned up on unmount. The same call from a click handler has no scope to attach to, and its watchers keep running."
+/>
+
+Called inside `setup()`, anything reactive your composable creates belongs to the component's effect scope and dies with the component. Called from a click handler, a route guard, or module scope in a Pinia store, there is no active scope — the watcher you created lives until the page reloads. Do it in a list where every row calls it once and the leak grows with the list.
+
+The fix is either don't create effects there, or take ownership:
+
+```js
+const scope = effectScope()
+scope.run(() => useThing())
+// later
+scope.stop()
+```
+
+`onScopeDispose` in the two composables above is doing this work quietly: it's the thing that makes them safe to call from `setup()` and honest about cleanup if you don't.
+
+## The extraction rule
+
+I don't extract on the first use. A single component using a pattern is not evidence of anything; it's just code that happens to be in one place.
+
+I extract on the second use, and only if the two uses are the same shape. If the second use needs three new options to fit, they weren't the same thing — they were two things with a family resemblance, and merging them produces a composable with a boolean parameter that changes what it returns. I've written that composable. Nobody could read the call site afterward, including me.
+
+The other rule: if it takes no reactive input and returns no reactive output, it isn't a composable. It's a function. Put it in `utils/` and stop giving it a `use` prefix.

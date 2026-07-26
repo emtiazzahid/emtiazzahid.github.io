@@ -504,6 +504,103 @@ hr {
   display: block;
 }
 
+/* --- Diagrams ------------------------------------------------------------- */
+
+.figure {
+  margin: 36px 0 0;
+}
+
+/* Diagrams are drawn at a fixed width; narrow screens scroll rather than squash
+   the mono labels below legibility. */
+.figure__canvas {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.figure__canvas svg {
+  display: block;
+  width: 100%;
+  min-width: 460px;
+  height: auto;
+}
+
+.figure__caption {
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* Shared vocabulary for every SVG in src/diagrams/ — the diagrams carry classes
+   only, so they inherit these tokens instead of hardcoding hex values. */
+.figure__canvas .dg-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  fill: var(--muted);
+}
+
+.figure__canvas .dg-mono {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  fill: var(--ink);
+}
+
+.figure__canvas .dg-text {
+  font-family: var(--font-body);
+  font-size: 13px;
+  fill: var(--ink);
+}
+
+.figure__canvas .dg-muted {
+  fill: var(--muted);
+}
+
+.figure__canvas .dg-accent {
+  fill: var(--accent);
+}
+
+.figure__canvas .dg-stroke {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.figure__canvas .dg-rule {
+  fill: none;
+  stroke: var(--rule-strong);
+  stroke-width: 1;
+}
+
+.figure__canvas .dg-soft {
+  fill: none;
+  stroke: var(--rule-soft);
+  stroke-width: 1;
+}
+
+.figure__canvas .dg-ghost {
+  fill: none;
+  stroke: var(--rule-strong);
+  stroke-width: 1.5;
+}
+
+.figure__canvas .dg-accent-stroke {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.figure__canvas .dg-dash {
+  stroke-dasharray: 3 4;
+}
+
+.figure__canvas .dg-fill {
+  fill: var(--code-bg);
+  stroke: none;
+}
+
 .prose hr {
   margin: 36px 0 0;
 }

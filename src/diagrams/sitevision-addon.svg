@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 262" width="640" height="262">
+  <!-- Where each file in a SiteVision add-on actually executes. -->
+
+  <text class="dg-eyebrow" x="0" y="14">BUILD TIME</text>
+  <line class="dg-rule" x1="0" y1="26" x2="640" y2="26" />
+  <text class="dg-mono" x="0" y="50">manifest.json</text>
+  <text class="dg-text dg-muted" x="220" y="50">Name, version, permissions. SiteVision reads this first.</text>
+  <text class="dg-mono" x="0" y="76">appDataDefaults.json</text>
+  <text class="dg-text dg-muted" x="220" y="76">Editor-configurable props, with their defaults.</text>
+
+  <text class="dg-eyebrow" x="0" y="118">SERVER — SITEVISION'S JS RUNTIME</text>
+  <line class="dg-rule" x1="0" y1="130" x2="640" y2="130" />
+  <text class="dg-mono" x="0" y="154">src/index.js</text>
+  <text class="dg-text dg-muted" x="220" y="154">@sitevision/api only. No fetch, no DOM, no npm runtime.</text>
+
+  <text class="dg-eyebrow" x="0" y="196">BROWSER</text>
+  <line class="dg-rule" x1="0" y1="208" x2="640" y2="208" />
+  <text class="dg-mono" x="0" y="232">src/*.jsx</text>
+  <text class="dg-text dg-muted" x="220" y="232">React 17, bundled by sitevision-scripts. Props come from above.</text>
+  <line class="dg-rule" x1="0" y1="252" x2="640" y2="252" />
+</svg>

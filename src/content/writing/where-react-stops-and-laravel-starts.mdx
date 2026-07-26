@@ -1,0 +1,66 @@
+---
+title: Where React should stop and Laravel should start
+date: 2025-11-20
+lede: One interactive table is not a reason to rebuild an admin panel as a single-page app. It keeps being treated as one.
+---
+
+import Figure from '../../components/Figure.astro';
+
+The request is always the same shape. There's a Laravel app with server-rendered pages, it works, and someone wants one screen to feel quicker — a table that filters without reloading, a form with a live preview. The estimate that comes back is "let's move the admin to React," and six weeks later the app has two routers, two auth stories, and a login page that occasionally logs you out of the half you're not looking at.
+
+You almost never need the second option. You need to decide where the boundary sits and then hold it.
+
+## Two boundaries, both fine, not on the same page
+
+<Figure
+  name="react-boundary"
+  caption="Islands and SPA are both reasonable. What breaks is a page trying to be both — half the state on the server, half in the client, and no agreement on who owns the session."
+/>
+
+Islands: Blade renders the page and React mounts into a few named divs. The server still owns navigation, auth, and the shape of the page. This is the right answer far more often than its reputation suggests, and it stays right for years because there's nothing to keep in sync.
+
+SPA: Blade renders one div and gets out of the way. Correct when a user lives in that screen all day and the round trip is genuinely in their way — an order desk, an editor, a dashboard someone stares at for six hours.
+
+The rule I'd write on the wall: pick per screen, never per app. An application can hold both. A page cannot.
+
+## Auth is where the seams show
+
+Islands ride the existing session cookie. React calls the same routes as everything else, includes the CSRF token, and the server remains the only thing that knows who's logged in. Nothing new to build.
+
+Go SPA and you've taken on a second auth system — Sanctum, tokens, refresh, and the question of what happens to an open tab when the session dies elsewhere. That's not an argument against it. It's an argument for noticing you're buying it, because it never appears in the estimate. The estimate says "rebuild the screens."
+
+## Let the server keep doing the parts it's good at
+
+Two things I see given away for no reason.
+
+**Validation.** Rules belong in a `FormRequest`, on the server, once. The client can mirror the *messages* for immediate feedback, but the moment validation rules exist in two languages they diverge, and the way you find out is a support ticket where the frontend accepted something the backend rejected with a 422 the UI didn't know how to render.
+
+**View models.** If Blade would have received a flattened, formatted, ready-to-print object, send React that object. Don't ship three normalized resources and make the client rebuild the join, then discover the client's version of "total" rounds differently than the invoice PDF does.
+
+```php
+// Not this
+return [
+    'order' => new OrderResource($order),
+    'lines' => LineResource::collection($order->lines),
+    'customer' => new CustomerResource($order->customer),
+];
+
+// This
+return new OrderScreenResource($order); // already joined, already formatted
+```
+
+The endpoint exists to serve one screen. Naming it after the screen instead of after the model is permission to shape it for the screen.
+
+## About Inertia
+
+Worth saying plainly, because a Laravel developer reading this is thinking it: Inertia takes the third position, and it's a good one. Server-side routing and controllers, client-side rendering, no API layer to maintain, no second auth story.
+
+Where I hesitate is that Inertia is a commitment to a way of moving data that the whole app then assumes. Islands are reversible — you delete a mount point and the page still works. If the interactive parts of an app are a handful of screens and the rest is genuinely fine as HTML, I'd rather stay reversible.
+
+If most screens want to be interactive, Inertia is a better answer than the SPA-plus-token-API build, and it's a better answer than sprinkling forty islands across an app and pretending that's a decision.
+
+## The question that settles it
+
+Not "would React be nicer here" — React is always nicer for the person writing it. The question is: **what happens to this screen when nobody has touched it for eighteen months?**
+
+The Blade page still renders. The island still mounts. The SPA has a lockfile full of packages with advisories, a build that no longer runs on the current Node, and an auth flow whose original author has left. That gap is the actual cost, and it's paid later, which is exactly why it doesn't make it into the estimate.

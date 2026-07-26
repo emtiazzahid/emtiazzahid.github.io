@@ -1,0 +1,48 @@
+---
+title: SiteVision add-ons, from a Laravel developer's head
+date: 2026-06-18
+lede: The platform gives you React and a package.json, which is exactly what makes the first week confusing.
+---
+
+import Figure from '../../components/Figure.astro';
+
+SiteVision is a CMS that's common in Norwegian and Swedish public-sector and enterprise sites, and mostly unknown outside the Nordics. If you come to it from Laravel and WordPress like I did, the onboarding is deceptive: you run `create-addon`, you get a `package.json` with React in it, and your brain files it under "Node project."
+
+It is not a Node project. Getting that wrong cost me most of a week, so here's the mental model I wish I'd started with.
+
+## Three places your code runs, and they're not the same place
+
+<Figure
+  name="sitevision-addon"
+  caption="Everything above the server band is read by the platform at install time. The middle band runs where npm packages don't exist. Only the bottom band is the JavaScript environment you're used to."
+/>
+
+The confusing band is the middle one. Server-side code in an add-on runs inside the platform's own JavaScript runtime, not Node — which means the npm dependency you just installed is available to your bundler and absent at runtime. Anything you need from the platform comes through `@sitevision/api`, and if the API doesn't expose it, you don't get it.
+
+Coming from WordPress this feels hostile. WordPress hands you the entire PHP process and trusts you not to burn the site down; SiteVision hands you a curated surface and doesn't. After a few months I came around to it. A locked-down surface is a maintenance promise: the reason a WordPress site rots in three years is that eight plugins all reached into the global process and one of them was wrong.
+
+## The editor is your settings UI, and you don't build it
+
+`appDataDefaults.json` declares the properties an editor can configure on your add-on, along with their defaults. The CMS renders the form. You don't write an options page, you don't validate a settings save, you don't invent a nonce.
+
+That's a genuine improvement over the WordPress equivalent, where every plugin author builds a slightly different settings screen and half of them forget capability checks. Here the shape of your configuration is a declaration, and it arrives in your component as props.
+
+The practical consequence: think about the editor's mental model before you write the component. Every property you add is a question an editor has to answer, forever, on every page they place the add-on on. Three properties with sensible defaults beat nine that make the form look thorough.
+
+## React 17 is the platform's choice, not yours
+
+`sitevision-scripts` pins the React version. At the time of writing that's 17, which means no `useSyncExternalStore` from React 18, no automatic batching outside event handlers, no concurrent features, and a chunk of the ecosystem's newer libraries are off the table.
+
+This is fine, and I mention it mainly because it changes how you evaluate a library. "Works with React 17" is a real question again, the way it stopped being one everywhere else. Pick small dependencies, or none — most add-ons are a form and a list, and a form and a list do not need a state management library.
+
+## You cannot hotfix production
+
+There's a `sign` step, and then `deploy-prod`. Add-ons are signed artifacts, not files on a server you can SSH into and patch. Coming from WordPress — where the entire disaster-recovery workflow is "edit the file on the server and don't tell anyone" — this is an adjustment.
+
+It also means your dev loop matters more than it does elsewhere. `setup-dev-properties` and `npm run dev` exist so you can iterate against a real environment before you sign anything, and it's worth spending an afternoon getting that working properly instead of doing what I did the first time, which was building, signing, and deploying to find out whether a prop was spelled right.
+
+## What transfers
+
+More than I expected. The layering instinct from plugin work applies directly: keep the platform-specific calls at the edge, keep the logic in functions that take plain data, and the code you'd have to rewrite when the platform changes stays small.
+
+What doesn't transfer is the assumption that you can reach for anything. Laravel and WordPress both let you solve a problem the wrong way if you're in a hurry. SiteVision mostly doesn't. That's slower on a Tuesday and faster over two years, which is roughly the trade the whole platform is making.

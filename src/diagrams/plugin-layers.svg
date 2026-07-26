@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 268" width="640" height="268">
+  <!-- Three bands. Only the top one knows it is running inside WordPress. -->
+
+  <!-- band 1 -->
+  <line class="dg-rule" x1="0" y1="4" x2="640" y2="4" />
+  <text class="dg-eyebrow" x="0" y="30">WORDPRESS</text>
+  <text class="dg-text" x="150" y="30">add_action · add_filter · register_rest_route</text>
+  <text class="dg-text dg-muted" x="150" y="52">Globals, superglobals, whatever the CMS hands you</text>
+
+  <!-- band 2 -->
+  <line class="dg-rule" x1="0" y1="76" x2="640" y2="76" />
+  <text class="dg-eyebrow" x="0" y="102">ADAPTERS</text>
+  <text class="dg-text" x="150" y="102">Six-line functions. Read the request, call a service.</text>
+  <text class="dg-text dg-muted" x="150" y="124">The only layer you rewrite per client</text>
+
+  <!-- band 3 -->
+  <line class="dg-rule" x1="0" y1="148" x2="640" y2="148" />
+  <text class="dg-eyebrow" x="0" y="174">DOMAIN</text>
+  <text class="dg-text" x="150" y="174">Plain PHP. No hooks, no $wpdb, no get_option().</text>
+  <text class="dg-text dg-muted" x="150" y="196">Runs in a unit test without loading WordPress</text>
+  <line class="dg-rule" x1="0" y1="220" x2="640" y2="220" />
+
+  <!-- direction of dependency -->
+  <g class="dg-accent-stroke">
+    <line x1="128" y1="16" x2="128" y2="192" />
+    <polyline points="123,185 128,192 133,185" />
+  </g>
+  <text class="dg-mono dg-accent" x="0" y="248">Dependencies point down. Nothing below reaches up.</text>
+</svg>
