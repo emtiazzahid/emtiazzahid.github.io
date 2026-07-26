@@ -3,14 +3,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE } from '../consts.js';
 
 const skills = [
-  { label: 'Core languages', items: 'PHP · JavaScript · C' },
-  { label: 'Frameworks', items: 'Laravel · Vue.js · WordPress · WooCommerce' },
+  { label: 'Core languages', items: 'PHP · JavaScript · TypeScript · C' },
+  { label: 'Frameworks & runtimes', items: 'Laravel · Vue.js · React · Node.js' },
+  { label: 'Platforms', items: 'WordPress · WooCommerce · SiteVision' },
   { label: 'Data & infrastructure', items: 'MySQL · SQL Server · Redis · AWS · Google Cloud' },
   { label: 'Practice', items: 'Git · Jira · Composer · npm · Socket.io · Pusher' },
 ];
 
 const description =
-  'Emtiaz Zahid — software engineer in Dhaka, Bangladesh. Laravel, Vue, and WordPress since 2016.';
+  'Emtiaz Zahid — software engineer in Dhaka, Bangladesh. Laravel, Vue, React, and WordPress since 2016.';
 ---
 
 <BaseLayout title={`About — ${SITE.title}`} description={description}>
@@ -26,8 +27,9 @@ const description =
       <p>
         Today I work at <a class="link-plain" href="https://getonnet.no" target="_blank" rel="noopener"
           >GetOnNet</a
-        >, maintaining Laravel APIs and building WordPress sites, plugins, and themes for clients in
-        Norway. Before that I spent two years at <a
+        >, split between PHP and JavaScript — maintaining Laravel APIs and building WordPress sites,
+        plugins, and themes on one side; React and Node.js platform work, including SiteVision
+        add-ons, on the other. All of it for clients in Norway. Before that I spent two years at <a
           class="link-plain"
           href="https://wedevs.com"
           target="_blank"
