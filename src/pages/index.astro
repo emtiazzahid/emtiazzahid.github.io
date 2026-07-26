@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostRow from '../components/PostRow.astro';
+import { SITE } from '../consts.js';
+import { getPosts } from '../lib/posts';
+
+const posts = (await getPosts()).slice(0, SITE.postsOnHome);
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE.author,
+  url: SITE.url,
+  jobTitle: 'Software Engineer',
+  email: `mailto:${SITE.email}`,
+  address: { '@type': 'PostalAddress', addressLocality: 'Dhaka', addressCountry: 'BD' },
+  worksFor: { '@type': 'Organization', name: 'GetOnNet', url: 'https://getonnet.no' },
+  knowsAbout: ['Laravel', 'Vue.js', 'WordPress', 'PHP', 'MySQL', 'Redis'],
+  sameAs: [SITE.github],
+};
+---
+
+<BaseLayout title={SITE.defaultTitle} description={SITE.description}>
+  <script
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify(personSchema)}
+    is:inline
+  />
+
+  <section class="section section--home">
+    <div class="eyebrow">Software engineer — Dhaka</div>
+    <h1 class="home__title">I build web systems, and write down what they teach me.</h1>
+    <p class="home__intro">
+      Emtiaz Zahid — software engineer at GetOnNet, working with Laravel, Vue, and WordPress. Ten
+      years of shipping for factories, clinics, and email platforms.
+    </p>
+
+    <div class="home__ctas">
+      <a class="cta--primary" href="/writing/">Read the writing →</a>
+      <a class="cta--secondary" href="/about/">About me</a>
+    </div>
+
+    <div class="home__latest">
+      <div class="ruled-row">
+        <h2 class="eyebrow">Latest writing</h2>
+        <a class="mono-link" href="/writing/">All posts →</a>
+      </div>
+      <div class="rows">
+        {posts.map((post) => <PostRow post={post} />)}
+        {posts.length === 0 && <div class="rows__empty">First post landing soon.</div>}
+      </div>
+    </div>
+
+    <div class="home__now">
+      <h2 class="eyebrow ruled">Now</h2>
+      <p>
+        Maintaining Laravel APIs and building WordPress platforms at <a
+          class="link-plain"
+          href="https://getonnet.no"
+          target="_blank"
+          rel="noopener">GetOnNet</a
+        >. Previously weMail at weDevs, and production systems for garment factories and clinics.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../consts.js';
+
+const skills = [
+  { label: 'Core languages', items: 'PHP · JavaScript · C' },
+  { label: 'Frameworks', items: 'Laravel · Vue.js · WordPress · WooCommerce' },
+  { label: 'Data & infrastructure', items: 'MySQL · SQL Server · Redis · AWS · Google Cloud' },
+  { label: 'Practice', items: 'Git · Jira · Composer · npm · Socket.io · Pusher' },
+];
+
+const description =
+  'Emtiaz Zahid — software engineer in Dhaka, Bangladesh. Laravel, Vue, and WordPress since 2016.';
+---
+
+<BaseLayout title={`About — ${SITE.title}`} description={description}>
+  <section class="section">
+    <h1 class="page-title">About</h1>
+
+    <div class="bio">
+      <p>
+        I'm Emtiaz Zahid, a software engineer in Dhaka, Bangladesh. Since 2016 I've shipped software
+        for garment factories, clinics, laundries, and email platforms — mostly with Laravel, Vue,
+        and WordPress.
+      </p>
+      <p>
+        Today I work at <a class="link-plain" href="https://getonnet.no" target="_blank" rel="noopener"
+          >GetOnNet</a
+        >, maintaining Laravel APIs and building WordPress sites, plugins, and themes for clients in
+        Norway. Before that I spent two years at <a
+          class="link-plain"
+          href="https://wedevs.com"
+          target="_blank"
+          rel="noopener">weDevs</a
+        > on weMail, a WordPress email-marketing platform.
+      </p>
+      <p>
+        I hold a B.Sc. in Computer Science from BUBT, and I care about boring, reliable systems — and
+        about writing down what building them teaches me.
+      </p>
+    </div>
+
+    <div class="skills">
+      <h2 class="eyebrow ruled">Skills &amp; tools</h2>
+      <div class="skills__grid">
+        {
+          skills.map((group) => (
+            <div>
+              <div class="skills__label">{group.label}</div>
+              <div class="skills__items">{group.items}</div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>

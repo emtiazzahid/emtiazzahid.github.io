@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostRow from '../../components/PostRow.astro';
+import { SITE } from '../../consts.js';
+import { getPosts, groupByYear } from '../../lib/posts';
+
+const years = groupByYear(await getPosts());
+
+const description =
+  'Notes on Laravel, Vue, WordPress, and the practice of building software, by Emtiaz Zahid.';
+---
+
+<BaseLayout title={`Writing — ${SITE.title}`} description={description}>
+  <section class="section">
+    <h1 class="page-title">Writing</h1>
+    <p class="page-intro">
+      Notes on Laravel, Vue, WordPress, and the practice of building software. New posts most
+      months.
+    </p>
+
+    <div class="years">
+      {
+        years.map(({ year, posts }) => (
+          <div>
+            <h2 class="year__label ruled">{year}</h2>
+            <div class="rows">
+              {posts.map((post) => (
+                <PostRow post={post} />
+              ))}
+            </div>
+          </div>
+        ))
+      }
+      {years.length === 0 && <div class="rows__empty">No posts published yet.</div>}
+    </div>
+  </section>
+</BaseLayout>

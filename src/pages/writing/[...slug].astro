@@ -1,0 +1,62 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../consts.js';
+import { getPosts, isoDate, postMeta } from '../../lib/posts';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const published = isoDate(post.data.date);
+const modified = post.data.updated ? isoDate(post.data.updated) : undefined;
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.lede,
+  datePublished: published,
+  ...(modified ? { dateModified: modified } : {}),
+  author: { '@type': 'Person', name: SITE.author, url: SITE.url },
+  mainEntityOfPage: new URL(`/writing/${post.id}/`, SITE.url).href,
+  inLanguage: SITE.locale,
+};
+---
+
+<BaseLayout
+  title={`${post.data.title} — ${SITE.title}`}
+  description={post.data.lede}
+  type="article"
+  publishedTime={published}
+  modifiedTime={modified}
+>
+  <script
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify(articleSchema)}
+    is:inline
+  />
+
+  <article class="section section--post">
+    <a class="mono-link" href="/writing/">← All writing</a>
+
+    <div class="post__meta">{postMeta(post)}</div>
+    <h1 class="post__title">{post.data.title}</h1>
+    <p class="post__lede">{post.data.lede}</p>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <div class="post__foot">
+      <a class="mono-link" href="/writing/">← All writing</a>
+    </div>
+  </article>
+</BaseLayout>

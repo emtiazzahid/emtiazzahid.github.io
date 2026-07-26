@@ -1,0 +1,16 @@
+---
+import { SITE } from '../consts.js';
+
+const year = new Date().getUTCFullYear();
+---
+
+<footer class="footer">
+  <div class="footer__inner wrap">
+    <div class="footer__copy">© {year} {SITE.author}</div>
+    <div class="footer__links">
+      <a class="footer__link" href={SITE.github} target="_blank" rel="noopener me">GitHub</a>
+      <a class="footer__link" href={`mailto:${SITE.email}`}>Email</a>
+      <a class="footer__link" href="/rss.xml">RSS</a>
+    </div>
+  </div>
+</footer>

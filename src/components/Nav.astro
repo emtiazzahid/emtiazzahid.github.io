@@ -1,0 +1,30 @@
+---
+import { NAV, SITE } from '../consts.js';
+
+interface Props {
+  /** Path of the current page, e.g. "/writing" or "/writing/some-post". */
+  path: string;
+}
+
+const { path } = Astro.props;
+
+/** "Writing" (href "/writing/") stays active on the index and on every post. */
+const isActive = (href: string) => path.startsWith(href);
+---
+
+<nav class="nav wrap">
+  <a class="nav__wordmark" href="/" aria-current={path === '/' ? 'page' : undefined}>{SITE.title}</a>
+  <div class="nav__links">
+    {
+      NAV.map((item) => (
+        <a
+          class="nav__link"
+          href={item.href}
+          aria-current={isActive(item.href) ? 'page' : undefined}
+        >
+          {item.label}
+        </a>
+      ))
+    }
+  </div>
+</nav>

@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../consts.js';
+---
+
+<BaseLayout title={`Page not found — ${SITE.title}`} description="That page doesn't exist." noindex>
+  <section class="section">
+    <div class="eyebrow">Error 404</div>
+    <h1 class="page-title page-title--spaced">Page not found</h1>
+    <p class="page-intro">
+      That URL doesn't lead anywhere. The writing is probably what you were after.
+    </p>
+    <div class="home__ctas">
+      <a class="cta--primary" href="/writing/">Read the writing →</a>
+      <a class="cta--secondary" href="/">Back home</a>
+    </div>
+  </section>
+</BaseLayout>

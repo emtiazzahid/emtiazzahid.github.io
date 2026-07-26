@@ -1,0 +1,15 @@
+---
+import type { Post } from '../lib/posts';
+import { formatDate, isoDate } from '../lib/posts';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+---
+
+<div class="row">
+  <time class="row__date" datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time>
+  <a class="row__title" href={`/writing/${post.id}/`}>{post.data.title}</a>
+</div>

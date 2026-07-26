@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../consts.js';
+
+const description = `Get in touch with Emtiaz Zahid — ${SITE.email}. Usually replies within a day.`;
+---
+
+<BaseLayout title={`Contact — ${SITE.title}`} description={description}>
+  <section class="section">
+    <h1 class="page-title">Contact</h1>
+    <p class="contact__intro">
+      Email is the fastest way to reach me — I usually reply within a day.
+    </p>
+
+    <a class="contact__email" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+
+    <div class="contact__lines">
+      <div>
+        Prefer to talk? <a href={SITE.bookingUrl} target="_blank" rel="noopener"
+          >Book a 30-minute call →</a
+        >
+      </div>
+      <div>
+        Code lives on <a href={SITE.github} target="_blank" rel="noopener me">GitHub →</a>
+      </div>
+    </div>
+
+    <div class="contact__where">{SITE.location}</div>
+  </section>
+</BaseLayout>
