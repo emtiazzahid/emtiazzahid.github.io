@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../consts.js';
+import { PLUGINS, statusLabel, wporgUrl } from '../../lib/plugins';
+
+export function getStaticPaths() {
+  return PLUGINS.map((plugin) => ({ params: { slug: plugin.slug }, props: { plugin } }));
+}
+
+const { plugin } = Astro.props;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: plugin.name,
+  alternateName: plugin.fullName,
+  description: plugin.tagline,
+  applicationCategory: 'WordPress plugin',
+  operatingSystem: 'WordPress',
+  softwareVersion: plugin.version,
+  license: 'https://www.gnu.org/licenses/gpl-2.0.html',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Person', name: SITE.author, url: SITE.url },
+  screenshot: plugin.screenshots.map((_caption, i) => new URL(`/plugins/${plugin.slug}/screenshot-${i + 1}.png`, SITE.url).href),
+};
+---
+
+<BaseLayout title={`${plugin.name} — WordPress plugin — ${SITE.title}`} description={plugin.tagline}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
+  <meta slot="head" property="og:image" content={new URL(`/plugins/${plugin.slug}/banner-1544x500.png`, SITE.url).href} />
+
+  <article class="section plugin">
+    <div class="eyebrow">WordPress plugin</div>
+    <header class="plugin__head">
+      <img class="plugin__icon" src={`/plugins/${plugin.slug}/icon-256x256.png`} alt="" width="64" height="64" />
+      <div>
+        <h1 class="plugin__title">{plugin.name}</h1>
+        <p class="plugin__sub">{plugin.fullName}</p>
+      </div>
+    </header>
+
+    <p class="plugin__tagline">{plugin.tagline}</p>
+
+    <dl class="plugin__meta">
+      <div><dt>Status</dt><dd>{statusLabel(plugin)}</dd></div>
+      <div><dt>Version</dt><dd>{plugin.version}</dd></div>
+      <div><dt>Requires</dt><dd>WordPress {plugin.requiresWp}+, PHP {plugin.requiresPhp}+</dd></div>
+      <div><dt>License</dt><dd>GPL-2.0-or-later</dd></div>
+      <div><dt>Price</dt><dd>Free</dd></div>
+    </dl>
+
+    <div class="plugin__ctas">
+      {
+        plugin.status === 'live' ? (
+          <a class="cta--primary" href={wporgUrl(plugin)} target="_blank" rel="noopener">
+            Get it on WordPress.org →
+          </a>
+        ) : (
+          <span class="cta--secondary cta--static">WordPress.org listing coming after review</span>
+        )
+      }
+      <a class="cta--secondary" href="/contact/">Questions? Contact me</a>
+    </div>
+
+    <div class="prose plugin__body">
+      <h2>What it does</h2>
+      {plugin.intro.map((p) => <p>{p}</p>)}
+
+      <h2>Features</h2>
+      <ul>
+        {
+          plugin.features.map((f) => (
+            <li>
+              <strong>{f.title}.</strong> {f.text}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <section class="plugin__shots">
+      <h2 class="eyebrow ruled">Screenshots</h2>
+      {
+        plugin.screenshots.map((caption, i) => (
+          <figure class="shot">
+            <img
+              src={`/plugins/${plugin.slug}/screenshot-${i + 1}.png`}
+              alt={caption}
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption class="figure__caption">
+              {i + 1}. {caption}
+            </figcaption>
+          </figure>
+        ))
+      }
+    </section>
+
+    <section class="plugin__support">
+      <h2 class="eyebrow ruled">Support &amp; source</h2>
+      <p>
+        Bug reports and questions: {plugin.status === 'live' ? 'the WordPress.org support forum for the plugin, or ' : ''}
+        <a class="link-plain" href={`mailto:${SITE.email}`}>{SITE.email}</a>. The plugin is GPL-2.0-or-later;
+        the full, unminified source ships inside the plugin package.
+      </p>
+    </section>
+  </article>
+</BaseLayout>

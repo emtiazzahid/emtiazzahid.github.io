@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../consts.js';
+import { PLUGINS, statusLabel } from '../../lib/plugins';
+
+const description =
+  'Free WordPress plugins by Emtiaz Zahid: launch checklists, error monitoring, content audits, broken links, internal linking, WooCommerce retention and plugin profiling.';
+---
+
+<BaseLayout title={`Plugins — ${SITE.title}`} description={description}>
+  <section class="section">
+    <h1 class="page-title">Plugins</h1>
+    <p class="page-intro">
+      WordPress plugins I build and maintain. All free, GPL-2.0-or-later, published on
+      WordPress.org. Each one does a single job an agency or site owner keeps doing by hand.
+    </p>
+
+    <div class="plugins">
+      {
+        PLUGINS.map((plugin) => (
+          <a class="plugin-row" href={`/plugins/${plugin.slug}/`}>
+            <img
+              class="plugin-row__icon"
+              src={`/plugins/${plugin.slug}/icon-256x256.png`}
+              alt=""
+              width="48"
+              height="48"
+              loading="lazy"
+            />
+            <div class="plugin-row__body">
+              <div class="plugin-row__head">
+                <span class="plugin-row__name">{plugin.name}</span>
+                <span class="plugin-row__status">{statusLabel(plugin)}</span>
+              </div>
+              <p class="plugin-row__tagline">{plugin.tagline}</p>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

@@ -25,6 +25,7 @@ export const SITE = {
 /** Nav entries. "Work" gets added here when the projects page lands. */
 export const NAV = [
   { href: '/writing/', label: 'Writing' },
+  { href: '/plugins/', label: 'Plugins' },
   { href: '/about/', label: 'About' },
   { href: '/contact/', label: 'Contact' },
 ];

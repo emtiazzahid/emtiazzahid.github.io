@@ -755,3 +755,158 @@ hr {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* --- Plugins ------------------------------------------------------------- */
+
+.plugins {
+  border-top: 1px solid var(--rule-strong);
+  margin-top: 32px;
+}
+
+.plugin-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.plugin-row:hover .plugin-row__name {
+  color: var(--accent);
+}
+
+.plugin-row__icon {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.plugin-row__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+}
+
+.plugin-row__name {
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.plugin-row__status,
+.plugin__meta dt {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.plugin-row__tagline {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.plugin__head {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.plugin__icon {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+}
+
+.plugin__title {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.plugin__sub {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.plugin__tagline {
+  font-size: 19px;
+  line-height: 1.5;
+  margin: 28px 0 0;
+  max-width: var(--measure);
+}
+
+.plugin__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px 24px;
+  margin: 32px 0 0;
+  padding: 18px 0;
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.plugin__meta div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.plugin__meta dd {
+  margin: 0;
+  font-size: 15px;
+}
+
+.plugin__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0 0;
+}
+
+.cta--static {
+  cursor: default;
+  color: var(--muted);
+}
+
+.plugin__body {
+  margin-top: 40px;
+}
+
+.plugin__shots {
+  margin-top: 48px;
+}
+
+.shot {
+  margin: 28px 0 0;
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--rule-strong);
+}
+
+.plugin__support {
+  margin-top: 48px;
+}
+
+.plugin__support p {
+  margin: 14px 0 0;
+  line-height: 1.6;
+  max-width: var(--measure);
+}
+
+@media (max-width: 600px) {
+  .plugin__title {
+    font-size: 28px;
+  }
+}
