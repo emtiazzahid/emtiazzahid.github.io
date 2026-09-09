@@ -26,9 +26,9 @@ export const statusLabel = (p: Plugin) =>
 
 export const PLUGINS: Plugin[] = [
   {
-    slug: 'launchwright',
-    name: 'Launchwright',
-    fullName: 'Launchwright – Go-Live Checklist & Client Handoff',
+    slug: 'launchmender',
+    name: 'Launchmender',
+    fullName: 'Launchmender – Go-Live Checklist & Client Handoff',
     tagline:
       'Website launch checklist with 44 automated checks and one-click fixes, a manual checklist, client help docs and a printable handoff report.',
     version: '1.0.0',
@@ -36,7 +36,7 @@ export const PLUGINS: Plugin[] = [
     requiresPhp: '7.4',
     status: 'review',
     intro: [
-      'Every WordPress launch has the same forgotten details: "Discourage search engines" still ticked, WP_DEBUG on, a Hello World post, lorem ipsum in a footer, the admin email pointing at the developer. Launchwright checks all of them from inside wp-admin and fixes most of them with one click.',
+      'Every WordPress launch has the same forgotten details: "Discourage search engines" still ticked, WP_DEBUG on, a Hello World post, lorem ipsum in a footer, the admin email pointing at the developer. Launchmender checks all of them from inside wp-admin and fixes most of them with one click.',
       'After launch it becomes the handoff: a manual checklist with assignees, a Help screen with your own documentation for the client, a welcome panel on their dashboard, a simplified menu for the client role, and a printable report you can attach to the invoice.',
     ],
     features: [
@@ -45,7 +45,7 @@ export const PLUGINS: Plugin[] = [
       { title: 'Manual checklist', text: 'The items no script can verify, with assignees, due dates, notes and drag-and-drop ordering. Ships with a template you can replace with your own.' },
       { title: 'Client handoff', text: 'A Help menu with your documentation (imports from WP Help), a welcome panel, contextual tips on edit screens, and a client role that hides the menus they should not touch.' },
       { title: 'Printable report', text: 'Site facts, every check with its result, the manual list and the plugin inventory, as a print-ready page or a time-limited share link.' },
-      { title: 'WP-CLI', text: 'wp launchwright check run --format=json exits non-zero on failures, so deployments can be gated on it.' },
+      { title: 'WP-CLI', text: 'wp launchmender check run --format=json exits non-zero on failures, so deployments can be gated on it.' },
     ],
     screenshots: [
       'The checklist: automated checks grouped by category with one-click fixes.',
