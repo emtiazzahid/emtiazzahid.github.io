@@ -125,7 +125,7 @@ export const PLUGINS: Plugin[] = [
     tagline:
       'Finds broken links and images without hammering your server, logs the 404s visitors hit, and fixes both in one click: edit, unlink, redirect, or swap in an archived copy.',
     version: '1.0.0',
-    requiresWp: '6.4',
+    requiresWp: '6.5',
     requiresPhp: '7.4',
     status: 'review',
     intro: [
