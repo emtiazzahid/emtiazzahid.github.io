@@ -34,7 +34,7 @@ export const PLUGINS: Plugin[] = [
     version: '1.0.0',
     requiresWp: '6.4',
     requiresPhp: '7.4',
-    status: 'review',
+    status: 'live',
     intro: [
       'Every WordPress launch has the same forgotten details: "Discourage search engines" still ticked, WP_DEBUG on, a Hello World post, lorem ipsum in a footer, the admin email pointing at the developer. Launchmender checks all of them from inside wp-admin and fixes most of them with one click.',
       'After launch it becomes the handoff: a manual checklist with assignees, a Help screen with your own documentation for the client, a welcome panel on their dashboard, a simplified menu for the client role, and a printable report you can attach to the invoice.',
