@@ -88,9 +88,9 @@ export const PLUGINS: Plugin[] = [
     ],
   },
   {
-    slug: 'stalewatch',
-    name: 'Stalewatch',
-    fullName: 'Stalewatch – Content Audit, Stale Post Finder & Content Decay Report',
+    slug: 'stalemender',
+    name: 'Stalemender',
+    fullName: 'Stalemender – Content Audit, Stale Post Finder & Content Decay Report',
     tagline:
       'Scores every post for staleness, thin content, orphan pages and lost Search Console traffic, then hands you a prioritised list of what to refresh.',
     version: '1.0.0',
@@ -98,7 +98,7 @@ export const PLUGINS: Plugin[] = [
     requiresPhp: '7.4',
     status: 'review',
     intro: [
-      'Old posts quietly lose rankings. Stalewatch audits everything you have published, gives each post a Freshness Score from 0 to 100 and tells you why it scored that way, so refreshing content becomes a ranked to-do list instead of guesswork.',
+      'Old posts quietly lose rankings. Stalemender audits everything you have published, gives each post a Freshness Score from 0 to 100 and tells you why it scored that way, so refreshing content becomes a ranked to-do list instead of guesswork.',
       'The audit runs in the background in small batches, so it works on shared hosting and on sites with thousands of posts.',
     ],
     features: [
