@@ -94,7 +94,7 @@ export const PLUGINS: Plugin[] = [
     tagline:
       'Scores every post for staleness, thin content, orphan pages and lost Search Console traffic, then hands you a prioritised list of what to refresh.',
     version: '1.0.0',
-    requiresWp: '6.4',
+    requiresWp: '6.5',
     requiresPhp: '7.4',
     status: 'review',
     intro: [
