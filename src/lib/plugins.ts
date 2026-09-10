@@ -31,7 +31,7 @@ export const PLUGINS: Plugin[] = [
     fullName: 'Launchmender – Go-Live Checklist & Client Handoff',
     tagline:
       'Website launch checklist with 44 automated checks and one-click fixes, a manual checklist, client help docs and a printable handoff report.',
-    version: '1.0.0',
+    version: '1.0.1',
     requiresWp: '6.4',
     requiresPhp: '7.4',
     status: 'live',
