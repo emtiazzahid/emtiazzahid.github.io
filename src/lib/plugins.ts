@@ -156,7 +156,7 @@ export const PLUGINS: Plugin[] = [
     tagline:
       'Get internal link suggestions as you write, find orphan posts, and add links in bulk. Runs on your server, no limits, optional AI with your own key.',
     version: '1.0.0',
-    requiresWp: '6.4',
+    requiresWp: '6.5',
     requiresPhp: '7.4',
     status: 'review',
     intro: [
