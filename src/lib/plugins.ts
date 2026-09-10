@@ -150,9 +150,9 @@ export const PLUGINS: Plugin[] = [
     ],
   },
   {
-    slug: 'anchorly',
-    name: 'Anchorly',
-    fullName: 'Anchorly – Internal Link Suggestions, Orphan Post Finder & Bulk Internal Linking',
+    slug: 'anchormender',
+    name: 'Anchormender',
+    fullName: 'Anchormender – Internal Link Suggestions, Orphan Post Finder & Bulk Internal Linking',
     tagline:
       'Get internal link suggestions as you write, find orphan posts, and add links in bulk. Runs on your server, no limits, optional AI with your own key.',
     version: '1.0.0',
@@ -160,7 +160,7 @@ export const PLUGINS: Plugin[] = [
     requiresPhp: '7.4',
     status: 'review',
     intro: [
-      'Internal links are the cheapest SEO win there is, and the easiest one to forget. Anchorly builds a small search index of your own content and uses it to suggest links at the moment you are writing, with the sentence that fits and an anchor phrase already picked.',
+      'Internal links are the cheapest SEO win there is, and the easiest one to forget. Anchormender builds a small search index of your own content and uses it to suggest links at the moment you are writing, with the sentence that fits and an anchor phrase already picked.',
       'Nothing leaves your server unless you turn on AI reranking with your own API key, and even then you see the token estimate first.',
     ],
     features: [
