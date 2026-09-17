@@ -218,7 +218,7 @@ export const PLUGINS: Plugin[] = [
     tagline:
       'Find which plugins slow down your site: PHP time, database queries, front-end weight, autoloaded options and cron load, ranked per plugin with plain-English verdicts.',
     version: '1.0.0',
-    requiresWp: '6.4',
+    requiresWp: '6.6',
     requiresPhp: '7.4',
     status: 'review',
     intro: [
