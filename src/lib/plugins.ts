@@ -65,7 +65,7 @@ export const PLUGINS: Plugin[] = [
     version: '1.0.0',
     requiresWp: '6.4',
     requiresPhp: '7.4',
-    status: 'review',
+    status: 'live',
     intro: [
       '"The site was fine yesterday." Faultwright shows you what broke, when it started, which plugin is probably responsible, and what to do about it. No external account, no developer required.',
       'Errors are grouped into issues, attributed to the plugin or theme that raised them, and shown on the same timeline as plugin activations, updates and settings changes, so the cause is usually one line above the effect.',
