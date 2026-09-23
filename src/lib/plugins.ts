@@ -96,7 +96,7 @@ export const PLUGINS: Plugin[] = [
     version: '1.0.0',
     requiresWp: '6.5',
     requiresPhp: '7.4',
-    status: 'review',
+    status: 'live',
     intro: [
       'Old posts quietly lose rankings. Stalemender audits everything you have published, gives each post a Freshness Score from 0 to 100 and tells you why it scored that way, so refreshing content becomes a ranked to-do list instead of guesswork.',
       'The audit runs in the background in small batches, so it works on shared hosting and on sites with thousands of posts.',
