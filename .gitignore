@@ -21,3 +21,6 @@ pnpm-debug.log*
 # editors
 .vscode/
 .idea/
+
+# unreleased plugins (names stay private until submitted)
+unreleased/

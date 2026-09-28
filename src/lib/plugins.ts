@@ -24,6 +24,12 @@ export const wporgUrl = (p: Plugin) => `https://wordpress.org/plugins/${p.slug}/
 export const statusLabel = (p: Plugin) =>
   p.status === 'live' ? 'Free on WordPress.org' : 'Submitted to WordPress.org · in review';
 
+/**
+ * Only plugins that are live or already submitted are listed. Unreleased ones
+ * stay in the gitignored unreleased/ folder (entries in unreleased/plugins.ts,
+ * artwork in unreleased/public/plugins/<slug>/) until they are submitted, so
+ * their names cannot be taken first. Move an entry back here when it is.
+ */
 export const PLUGINS: Plugin[] = [
   {
     slug: 'launchmender',
@@ -119,9 +125,9 @@ export const PLUGINS: Plugin[] = [
     ],
   },
   {
-    slug: 'linkmender',
-    name: 'LinkMender',
-    fullName: 'LinkMender – Broken Link Checker, 404 Monitor & Redirects',
+    slug: 'waymender',
+    name: 'Waymender',
+    fullName: 'Waymender – Broken Link Checker, 404 Monitor & Redirects',
     tagline:
       'Finds broken links and images without hammering your server, logs the 404s visitors hit, and fixes both in one click: edit, unlink, redirect, or swap in an archived copy.',
     version: '1.0.0',
@@ -129,7 +135,7 @@ export const PLUGINS: Plugin[] = [
     requiresPhp: '7.4',
     status: 'review',
     intro: [
-      'Broken links cost you readers, rankings and trust. Most link checkers either hammer your server and the sites you link to, or leave you with a spreadsheet and no way to fix anything. LinkMender does the scanning politely and puts the fix one click away.',
+      'Broken links cost you readers, rankings and trust. Most link checkers either hammer your server and the sites you link to, or leave you with a spreadsheet and no way to fix anything. Waymender does the scanning politely and puts the fix one click away.',
       'Links and images in posts, pages, custom post types, custom fields, menus, widgets, term descriptions and page-builder content are collected once and checked in the background with per-host throttling.',
     ],
     features: [
@@ -147,99 +153,6 @@ export const PLUGINS: Plugin[] = [
       'Redirects: exact and wildcard rules, hit counts, CSV import/export.',
       'Editor sidebar showing link problems in the post you are editing.',
       'Settings: what to scan, politeness, exclusions, 404 log and notifications.',
-    ],
-  },
-  {
-    slug: 'anchormender',
-    name: 'Anchormender',
-    fullName: 'Anchormender – Internal Link Suggestions, Orphan Post Finder & Bulk Internal Linking',
-    tagline:
-      'Get internal link suggestions as you write, find orphan posts, and add links in bulk. Runs on your server, no limits, optional AI with your own key.',
-    version: '1.0.0',
-    requiresWp: '6.6',
-    requiresPhp: '7.4',
-    status: 'review',
-    intro: [
-      'Internal links are the cheapest SEO win there is, and the easiest one to forget. Anchormender builds a small search index of your own content and uses it to suggest links at the moment you are writing, with the sentence that fits and an anchor phrase already picked.',
-      'Nothing leaves your server unless you turn on AI reranking with your own API key, and even then you see the token estimate first.',
-    ],
-    features: [
-      { title: 'Editor sidebar', text: 'Related posts for the draft you are writing, each with the best-matching sentence and a highlighted anchor. Insert adds the link in place using the editor\'s own link format.' },
-      { title: 'Link from older posts', text: 'Find published posts that could link to the one you are editing and add the link there, with a revision, without leaving the editor.' },
-      { title: 'Link report', text: 'Inbound and outbound internal link counts for every post, orphans and "fewer than 2 inbound" one click away, search, sort and CSV export.' },
-      { title: 'Bulk linking', text: 'Generate proposals for a whole post type, review every one, apply with revisions, undo per post.' },
-      { title: 'Existing-link audit', text: 'Links pointing at drafts, trashed or noindex posts, redirect chains and generic anchors like "click here".' },
-      { title: 'Classic editor', text: 'The same suggestions in a meta box, and a WP-CLI command for reindexing.' },
-    ],
-    screenshots: [
-      'Suggestions in the block editor sidebar with the matching sentence and anchor.',
-      'A link inserted in place, ready to save.',
-      'The link report with orphan pages and inbound/outbound counts.',
-      'Bulk linking: review every proposal before applying.',
-      'The existing-link audit.',
-      'AI rerank with a token estimate before anything is sent.',
-    ],
-  },
-  {
-    slug: 'repeatiq-for-woocommerce',
-    name: 'RepeatIQ for WooCommerce',
-    fullName: 'RepeatIQ for WooCommerce',
-    tagline:
-      'Customer segments, RFM scores, repeat rate, LTV and cohort retention for WooCommerce, with segment export and one-off emails. Your data stays on your server.',
-    version: '1.0.0',
-    requiresWp: '6.6',
-    requiresPhp: '7.4',
-    status: 'review',
-    intro: [
-      'RepeatIQ turns your existing WooCommerce orders into customer intelligence. It groups every customer into one of eleven RFM segments (Champions, Loyal, At risk, Can\'t lose them, Lost and so on), shows your repeat rate and lifetime value, and lets you act on a segment without exporting to a third-party tool.',
-      'Everything is computed from the orders table on your own server. HPOS and legacy order storage are both supported.',
-    ],
-    features: [
-      { title: 'Overview', text: 'Repeat rate, average lifetime value, orders per customer, median days between orders and 90-day active customers, with trend against the previous period.' },
-      { title: 'RFM grid', text: 'Customer count, revenue and share per segment. Click a tile to see the customers.' },
-      { title: 'Customers', text: 'Filter by segment, spend, orders, last order date, country, acquisition source, tag, product, category or coupon. Export CSV, copy emails, add tags, or create a coupon restricted to those customers.' },
-      { title: 'Segment builder', text: 'Saved segments with a live count, refreshed on a schedule.' },
-      { title: 'Cohort retention', text: 'Monthly acquisition cohorts and how much of each still buys.' },
-      { title: 'Segment emails', text: 'One-off emails through the WooCommerce mailer with merge tags, consent summary and unsubscribe handling.' },
-    ],
-    screenshots: [
-      'Overview with KPIs and the RFM segment grid.',
-      'Customers list with filters and bulk actions.',
-      'Segment builder with live count.',
-      'Cohort retention heatmap.',
-      'Customer drawer with order timeline and RFM explanation.',
-      'Segment email composer with merge tags and consent summary.',
-    ],
-  },
-  {
-    slug: 'deadweight',
-    name: 'Deadweight',
-    fullName: 'Deadweight – Plugin Performance Profiler',
-    tagline:
-      'Find which plugins slow down your site: PHP time, database queries, front-end weight, autoloaded options and cron load, ranked per plugin with plain-English verdicts.',
-    version: '1.0.0',
-    requiresWp: '6.6',
-    requiresPhp: '7.4',
-    status: 'review',
-    intro: [
-      'Deadweight answers one question: which plugins make this site slow, and by how much? Click Run profile and it requests a handful of typical pages from your own server, several times each, with a profiler attached, then charges every millisecond, query and kilobyte to the plugin that caused it.',
-      'Pick a plugin and re-run the same pages with it filtered out of the profiling requests only. You see the before and after without deactivating anything for visitors.',
-    ],
-    features: [
-      { title: 'Per-plugin PHP time', text: 'Self time in hooks and includes, with nested hooks charged to the plugin that did the work, min, average and max across passes.' },
-      { title: 'Database queries', text: 'Count and time per plugin with the slowest queries and their caller.' },
-      { title: 'Front-end assets', text: 'What each plugin enqueues, its size, whether it blocks rendering, and libraries loaded twice by different plugins.' },
-      { title: 'Autoload and cron', text: 'Autoloaded options and cron events by owner, including orphaned cron hooks left behind by removed plugins.' },
-      { title: 'Weight score and verdicts', text: 'A relative score from PHP time, query time, render-blocking KB, autoload KB and cron runs per day, plus a plain-language verdict per plugin.' },
-      { title: 'History, compare, export', text: 'Sessions are kept, any two can be compared after an update, and a self-contained HTML report can be sent to a client. Browse-and-profile mode for hosts that block loopback requests.' },
-    ],
-    screenshots: [
-      'Ranked results: weight, PHP time, queries, front-end KB, autoload, cron and a verdict per plugin.',
-      'Expanded plugin row: PHP per URL, slowest hooks and queries, assets and options.',
-      'Try without: the same pages measured with one plugin filtered out.',
-      'Autoloaded options by owner.',
-      'Compare two sessions after an update.',
-      'Self-contained HTML export.',
     ],
   },
 ];
