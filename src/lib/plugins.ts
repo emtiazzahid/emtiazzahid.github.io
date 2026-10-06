@@ -133,7 +133,7 @@ export const PLUGINS: Plugin[] = [
     version: '1.0.0',
     requiresWp: '6.5',
     requiresPhp: '7.4',
-    status: 'review',
+    status: 'live',
     intro: [
       'Broken links cost you readers, rankings and trust. Most link checkers either hammer your server and the sites you link to, or leave you with a spreadsheet and no way to fix anything. Waymender does the scanning politely and puts the fix one click away.',
       'Links and images in posts, pages, custom post types, custom fields, menus, widgets, term descriptions and page-builder content are collected once and checked in the background with per-host throttling.',
