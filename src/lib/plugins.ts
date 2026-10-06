@@ -155,4 +155,35 @@ export const PLUGINS: Plugin[] = [
       'Settings: what to scan, politeness, exclusions, 404 log and notifications.',
     ],
   },
+  {
+    slug: 'anchormender',
+    name: 'Anchormender',
+    fullName: 'Anchormender – Internal Link Suggestions, Orphan Post Finder & Bulk Internal Linking',
+    tagline:
+      'Get internal link suggestions as you write, find orphan posts, and add links in bulk. Runs on your server, no limits, optional AI with your own key.',
+    version: '1.0.0',
+    requiresWp: '6.6',
+    requiresPhp: '7.4',
+    status: 'review',
+    intro: [
+      'Internal links are the cheapest SEO win there is, and the easiest one to forget. Anchormender builds a small search index of your own content and uses it to suggest links at the moment you are writing, with the sentence that fits and an anchor phrase already picked.',
+      'Nothing leaves your server unless you turn on AI reranking with your own API key, and even then you see the token estimate first.',
+    ],
+    features: [
+      { title: 'Editor sidebar', text: 'Related posts for the draft you are writing, each with the best-matching sentence and a highlighted anchor. Insert adds the link in place using the editor\'s own link format.' },
+      { title: 'Link from other posts', text: 'Find published posts on the same topic that could link to the one you are editing and add the link there without leaving the editor.' },
+      { title: 'Link report', text: 'Inbound and outbound internal link counts for every post, orphans and "fewer than 2 inbound" one click away, search, sort and CSV export.' },
+      { title: 'Bulk linking', text: 'Pick up to 50 posts per batch, orphans first, review every proposal, apply, and undo a whole batch in one click.' },
+      { title: 'Link audit', text: 'Weekly and on demand: links to posts that were unpublished, trashed or deleted, links to noindex pages, over-used anchors and generic ones like "click here".' },
+      { title: 'Classic editor', text: 'The same suggestions in a meta box, and a WP-CLI command for reindexing.' },
+    ],
+    screenshots: [
+      'Suggestions in the block editor sidebar with the matching sentence and anchor.',
+      'A link inserted in place, ready to save.',
+      'The link report with orphan pages and inbound/outbound counts.',
+      'Bulk linking: review every proposal before applying.',
+      'The existing-link audit.',
+      'AI rerank with a token estimate before anything is sent.',
+    ],
+  },
 ];
