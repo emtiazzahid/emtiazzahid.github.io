@@ -68,7 +68,7 @@ export const PLUGINS: Plugin[] = [
     fullName: 'Faultwright – Error Monitor, Cron & Email Failure Alerts',
     tagline:
       'See every PHP error, JavaScript error, failed cron job, failed email and failed update on one screen, explained in plain English, with what changed before it started.',
-    version: '1.0.0',
+    version: '1.1.0',
     requiresWp: '6.4',
     requiresPhp: '7.4',
     status: 'live',
@@ -81,7 +81,7 @@ export const PLUGINS: Plugin[] = [
       { title: 'JavaScript errors', text: 'A 1.5 KB collector with no cookies or dependencies reports browser errors, attributed to the plugin or theme that shipped the script. Extension noise is filtered out.' },
       { title: 'Cron health', text: 'A dead WP-Cron, overdue events, events whose plugin was removed, and scheduled jobs that crash.' },
       { title: 'Email and update failures', text: 'Every wp_mail failure and SMTP-plugin error, plugin, theme and core updates that could not be installed, and plugins that crash on activation.' },
-      { title: 'Plain-English explanations', text: 'Each issue gets what it means, the likely cause, what to try and when to call a developer or the host. Optional AI explanations with your own API key for anything unmatched.' },
+      { title: 'Plain-English explanations', text: 'Each issue gets what it means, the likely cause, what to try and when to call a developer or the host. Optional AI explanations for anything unmatched, through the AI provider connected in WordPress 7.0+ or your own API key.' },
       { title: 'Notifications and privacy', text: 'Daily digest or instant email for critical issues, retention limits, IP hashing, and a kill switch constant for wp-config.php.' },
     ],
     screenshots: [
@@ -99,7 +99,7 @@ export const PLUGINS: Plugin[] = [
     fullName: 'Stalemender – Content Audit, Stale Post Finder & Content Decay Report',
     tagline:
       'Scores every post for staleness, thin content, orphan pages and lost Search Console traffic, then hands you a prioritised list of what to refresh.',
-    version: '1.0.0',
+    version: '1.1.0',
     requiresWp: '6.5',
     requiresPhp: '7.4',
     status: 'live',
