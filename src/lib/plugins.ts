@@ -160,14 +160,14 @@ export const PLUGINS: Plugin[] = [
     name: 'Anchormender',
     fullName: 'Anchormender – Internal Link Suggestions, Orphan Post Finder & Bulk Internal Linking',
     tagline:
-      'Get internal link suggestions as you write, find orphan posts, and add links in bulk. Runs on your server, no limits, optional AI with your own key.',
+      'Get internal link suggestions as you write, find orphan posts, and add links in bulk. Runs on your server, no limits, optional AI through WordPress's AI connectors or your own key.',
     version: '1.0.0',
     requiresWp: '6.6',
     requiresPhp: '7.4',
     status: 'review',
     intro: [
       'Internal links are the cheapest SEO win there is, and the easiest one to forget. Anchormender builds a small search index of your own content and uses it to suggest links at the moment you are writing, with the sentence that fits and an anchor phrase already picked.',
-      'Nothing leaves your server unless you turn on AI reranking with your own API key, and even then you see the token estimate first.',
+      'Nothing leaves your server unless you turn on AI reranking, through the provider you connected in WordPress 7.0+ or with your own API key, and even then you see the token estimate first.',
     ],
     features: [
       { title: 'Editor sidebar', text: 'Related posts for the draft you are writing, each with the best-matching sentence and a highlighted anchor. Insert adds the link in place using the editor\'s own link format.' },
