@@ -160,7 +160,7 @@ export const PLUGINS: Plugin[] = [
     name: 'Anchormender',
     fullName: 'Anchormender – Internal Link Suggestions, Orphan Post Finder & Bulk Internal Linking',
     tagline:
-      'Get internal link suggestions as you write, find orphan posts, and add links in bulk. Runs on your server, no limits, optional AI through WordPress's AI connectors or your own key.',
+      'Get internal link suggestions as you write, find orphan posts, and add links in bulk. Runs on your server, no limits, optional AI through the WordPress AI connectors or your own key.',
     version: '1.0.0',
     requiresWp: '6.6',
     requiresPhp: '7.4',
