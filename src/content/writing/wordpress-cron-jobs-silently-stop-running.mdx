@@ -1,0 +1,102 @@
+---
+title: Why WordPress cron jobs silently stop running
+date: 2026-10-08
+lede: WP-Cron only runs when someone visits, and it fails without telling anyone. How to check whether it's running and replace it with a real cron.
+---
+
+The symptom usually arrives second-hand. A scheduled post sits in the list with a red "Missed schedule" label. A client asks why the weekly report stopped arriving in August. A backup plugin's last successful run is three weeks old, and nothing anywhere said so.
+
+All of those are WP-Cron, and WP-Cron failing quietly isn't really a bug. It's what the design does once the conditions it assumes stop being true.
+
+## WP-Cron is a side effect of page loads
+
+There is no daemon. Core hooks `wp_cron()` to `init`, so it runs on every request, and since WordPress 6.9 it defers the real work to `shutdown`. There, `_wp_cron()` checks whether any event is due. If one is, `spawn_cron()` sends a POST request to the site's own `wp-cron.php` with a 0.01-second timeout and `blocking` set to false. It doesn't wait for an answer. `wp-cron.php` then runs every due event, one after another, inside that single background request.
+
+Everything that goes wrong follows from that.
+
+## How it stops without telling you
+
+**Nobody visits.** A daily job on a site with no overnight traffic runs when the first visitor shows up in the morning. A page served from a full-page cache never gets as far as `init`, so it doesn't count as a visit. Missed runs aren't replayed either: a recurring event that is three days late runs once, and `wp_reschedule_event()` moves it to the next slot on its original schedule.
+
+**`DISABLE_WP_CRON` without a replacement.** With the constant set to true, `_wp_cron()` returns before spawning anything. That's the correct first step of moving to a server cron, and it's easy for it to be the only step: the constant moves to the new host, the crontab entry doesn't.
+
+**The loopback fails.** `spawn_cron()` doesn't wait for the response and `wp_cron()` returns nothing, so a failed spawn is invisible. The usual causes are a server that can't reach its own public hostname, a firewall or security rule that blocks requests coming from the server itself, and HTTP basic auth on a staging site. That last one is sneaky. Site Health's loopback test forwards the basic auth credentials your browser sent; the real spawn doesn't, so the test can pass while cron never runs.
+
+**A long-running event.** Due events run in sequence in one request, so a slow import holds up everything queued behind it, and PHP's or the web server's time limit can kill the request partway through. If a run lasts longer than `WP_CRON_LOCK_TIMEOUT` (60 seconds by default), the next page load may start a second run, and the first gives up after its current hook.
+
+**A fatal error inside a callback.** `wp-cron.php` reschedules and unschedules each event before it calls the hook. If the callback dies, that run is gone and the next one is already booked. Whatever was queued behind it waits for the next spawn. The error reaches the PHP error log if logging is on, and nowhere else: WordPress's "Your Site is Experiencing a Technical Issue" email is only sent for fatals on the login page, in wp-admin and on a few AJAX actions, and a background request to `wp-cron.php` is none of those.
+
+Email fails the same way. `wp_mail()` returns false and fires `wp_mail_failed`, and unless something is hooked to that action, that's the end of it. A cron job that emails a report can fail in two places, and neither one tells anybody.
+
+## Checking whether it actually runs
+
+Start with Tools → Site Health. The "Scheduled events" test calls an event late when it's past due, and "failed" when it's more than five minutes past due (with `DISABLE_WP_CRON` set: late after 15 minutes, failed after an hour). Failed only means overdue here; Site Health can't see inside a callback. The "Loopback request" test tells you whether the site can reach `wp-cron.php` at all.
+
+One catch: opening Site Health is itself a page load. On a site whose only problem is low traffic, checking runs the overdue events, and the warning is gone on the next refresh.
+
+WP-CLI gives a more direct view:
+
+```sh
+wp cron test
+wp cron event list --fields=hook,next_run_gmt,next_run_relative,recurrence
+date -u
+wp config get DISABLE_WP_CRON
+```
+
+`wp cron test` builds the request the way `spawn_cron()` does but waits for the answer and reports the HTTP status. It errors if `DISABLE_WP_CRON` is set, which is expected once you've moved to a server cron and not a sign that anything is broken.
+
+`wp cron event list` is the one people misread. `next_run_relative` says "now" for anything due or overdue, without saying by how much, so compare `next_run_gmt` with `date -u`. On my local test install, which nobody visits, the whole column read "now", next to timestamps going back to the previous afternoon.
+
+`wp config get` prints the constant's value if `wp-config.php` defines it, and errors if it doesn't.
+
+## Replacing it with a real cron
+
+Stop depending on visitors and let the server's scheduler trigger WordPress. First, switch off the page-load trigger in `wp-config.php`, above the "stop editing" line:
+
+```php
+define( 'DISABLE_WP_CRON', true );
+```
+
+Then add a crontab entry for the user that owns the site files. With shell access and WP-CLI, run the due events directly:
+
+```sh
+*/5 * * * * /usr/local/bin/wp --path=/var/www/example.com cron event run --due-now --quiet
+```
+
+This skips HTTP entirely, so loopbacks, basic auth and web server timeouts stop mattering, and PHP's CLI has no execution time limit by default. It also doesn't take WordPress's cron lock, so if a run can outlast five minutes, prefix the command with `flock -n /tmp/example-cron.lock` to keep two runs from overlapping.
+
+Without shell access, use the host's cron screen or an external cron service to request the URL instead:
+
+```sh
+*/5 * * * * curl -fsS -o /dev/null https://example.com/wp-cron.php
+```
+
+`wp-cron.php` is built for this. Its own header says calling it directly doesn't depend on `DISABLE_WP_CRON`, and without a query string it takes the cron lock itself.
+
+On multisite, each site keeps its schedule in its own `cron` option, so either command only covers one site. Put a loop in a script and call that from cron instead:
+
+```sh
+#!/bin/sh
+WP="/usr/local/bin/wp --path=/var/www/example.com"
+for url in $($WP site list --field=url); do
+  $WP cron event run --due-now --quiet --url="$url"
+done
+```
+
+If you can't add a server cron and loopbacks are blocked, there's `ALTERNATE_WP_CRON`:
+
+```php
+define( 'ALTERNATE_WP_CRON', true );
+```
+
+With it, a visitor's GET request is answered with a redirect to the same URL plus a `doing_wp_cron` query argument, and the due events run in the process that was serving that visitor. It works without a loopback, but every spawn costs someone an extra redirect and puts the parameter in their address bar. It's a stopgap, not a fix.
+
+Whichever you pick, run `wp cron event list` again the next day and check that `next_run_gmt` moved forward.
+
+## Letting something watch it
+
+Everything above tells you how to look. The original problem is that nobody looks, which is why I built Faultwright, a free plugin on [WordPress.org](https://wordpress.org/plugins/faultwright/). It records when WP-Cron last ran and checks every 15 minutes for a dead cron (including `DISABLE_WP_CRON` with no server cron behind it), overdue events, and events whose plugin was removed. That check is a cron event too, so a dead cron would stall it along with everything else. It also runs when someone loads wp-admin, and that is where it catches one.
+
+A dead cron or a fatal error during a cron request becomes a critical issue, with an email on the first occurrence and a failing Site Health result. The dead-cron issue lists the usual causes in plain English: no server cron behind `DISABLE_WP_CRON`, low traffic, blocked loopbacks. The Cron screen shows next run, overdue flags, how long each hook took last time and a Run now button, and `wp faultwright cron check` prints the same picture.
+
+It also records PHP errors and failed emails, including every `wp_mail` failure and a warning when orders or form entries come in but no email goes out. Those are the other things on a WordPress site that break without anyone watching. More on [the plugin page](/plugins/faultwright/).

@@ -1,0 +1,110 @@
+---
+title: A WordPress launch checklist for client sites
+date: 2026-10-08
+lede: The settings and leftovers that get missed when a client's WordPress site goes live, how to check each one quickly, and what to hand over.
+---
+
+Nobody forgets to point the domain at the new server. What gets forgotten is the small stuff that was fine on staging and is wrong in production: "Discourage search engines" still ticked three weeks after launch, a Hello World post in the blog feed, a contact form mailing an address nobody reads.
+
+This is the list I run before every client launch. It's short on purpose. Each item says where to look in wp-admin and which WP-CLI command checks it faster, because by the fifth site you'll want the commands.
+
+## Search visibility
+
+Settings → Reading → "Discourage search engines from indexing this site" sets the `blog_public` option to `0`. WordPress then prints a `noindex, nofollow` robots meta tag on every page, and it also switches off the core sitemap: `/wp-sitemap.xml` returns a 404 while the box is ticked. One checkbox explains both "Google won't index us" and "our sitemap is broken". While it's on, the Dashboard's At a Glance box says "Search engines discouraged".
+
+```bash
+wp option get blog_public          # 1 = public, 0 = discouraged
+wp option update blog_public 1
+curl -s https://example.com/ | grep -io "<meta name=.robots[^>]*>"
+curl -s https://example.com/robots.txt
+```
+
+On a public site that meta tag normally says `max-image-preview:large`. If it says `noindex`, either the setting or an SEO plugin is still blocking the page.
+
+Since WordPress 5.3, the generated robots.txt no longer adds `Disallow: /` when indexing is discouraged. So if you see `Disallow: /` under `User-agent: *`, it comes from a real file in the web root, usually one uploaded to keep staging out of Google and migrated along with everything else. The standard rewrite rules serve a real file before WordPress sees the request, so delete or fix it.
+
+## Debug and dev leftovers
+
+`WP_DEBUG` set to `true` with `WP_DEBUG_DISPLAY` at its default (`true`) prints notices and warnings into the page, server paths included. Two quieter ways to end up there: if `WP_DEBUG` isn't defined but `WP_ENVIRONMENT_TYPE` is `'development'` (or `WP_DEVELOPMENT_MODE` is set), WordPress switches debug on by itself. And when `WP_DEBUG` is `false`, WordPress leaves PHP's `display_errors` alone, so a host that ships with it on still shows warnings.
+
+What I want in a production `wp-config.php`:
+
+```php
+define( 'WP_ENVIRONMENT_TYPE', 'production' );
+define( 'WP_DEBUG', false );
+define( 'WP_DEBUG_DISPLAY', false );
+define( 'WP_DEBUG_LOG', false );
+ini_set( 'display_errors', '0' );
+```
+
+Check what WordPress actually ends up with, not just what's in the file:
+
+```bash
+wp eval 'var_dump( WP_DEBUG, WP_DEBUG_DISPLAY, wp_get_environment_type() );'
+curl -sI https://example.com/wp-content/debug.log | head -1
+```
+
+The second line matters if logging was ever on. `WP_DEBUG_LOG` set to `true` writes to `wp-content/debug.log`, inside the web root. You want a 404 or 403 there. If you prefer clicking, Tools → Site Health flags both displayed errors and a public log.
+
+Then the content. Every install creates a "Hello world!" post with a comment from "A WordPress Commenter", a "Sample Page", and a draft Privacy Policy. Lorem ipsum is harder to spot, because page builders often keep content in post meta where the normal search doesn't look, so search the whole database:
+
+```bash
+wp post list --post_type=post,page --post_name__in=hello-world,sample-page --fields=ID,post_title,post_status
+wp post delete 1 2                 # IDs from the line above; trash, unless you add --force
+wp db search 'lorem ipsum' --one_line
+wp plugin list --status=active
+```
+
+`wp db search` also finds old revisions, which you can ignore. The active plugin list is where Query Monitor, a staging login lock and the migration plugin you used once tend to linger.
+
+## Settings nobody revisits
+
+All in Settings → General, apart from permalinks:
+
+- **Admin email** (`admin_email`). Update notices and the "Your Site is Experiencing a Technical Issue" recovery email go here. A change made in the form only takes effect once the new address clicks a confirmation link, which clients don't always do. `wp option update admin_email` sets it straight away.
+- **Title and tagline** (`blogname`, `blogdescription`). When WordPress builds the title tag, the front page gets the tagline. Fresh installs leave it empty; older sites can still say "Just another WordPress site".
+- **Timezone** (`timezone_string`, empty means a fixed offset). An English install starts at UTC+0, which skews scheduled posts and form timestamps. Pick a city rather than an offset, so daylight saving is handled.
+- **Site icon** (`site_icon`, `0` means none). Without one, and without a real `favicon.ico` file, WordPress redirects `/favicon.ico` to its own logo.
+- **Permalinks** (`permalink_structure`, empty means plain `?p=123`). The installer falls back to plain when its rewrite test fails. If every page except the home page 404s after a migration, open Settings → Permalinks: loading that screen flushes the rewrite rules and, on Apache, rewrites `.htaccess` if it can.
+
+```bash
+wp option get admin_email
+wp option get blogdescription
+wp option get timezone_string
+wp option get site_icon
+wp option get permalink_structure
+```
+
+## Email and forms
+
+`wp_mail()` returning `true` only means PHPMailer accepted the message. By default it goes out through PHP's `mail()` from `wordpress@` your domain, and that is the mail most likely to land in spam or nowhere. Send one to an inbox you can read:
+
+```bash
+wp eval 'var_dump( wp_mail( "you@example.com", "Launch test", "If this arrived, outgoing mail works." ) );'
+```
+
+Then check the inbox, not the return value. If it's missing or in spam, route mail through SMTP or a transactional provider and set SPF and DKIM on the domain. After that, submit every form once as a visitor and confirm the notification reaches the client's inbox, and that hitting reply reaches the person who filled it in.
+
+## Backups, updates and accounts
+
+- **Backups.** One copy that doesn't live only on the same server, restored somewhere at least once. A backup you've never restored is a guess.
+- **Updates.** Run them before launch, not the week after: `wp core check-update`, `wp plugin list --update=available`, `wp theme list --update=available`. The `auto_update` column in `wp plugin list` shows what updates itself; decide that deliberately and tell the client.
+- **Accounts.** `wp user list --role=administrator`, then remove anyone who doesn't need access, reassigning their content with `wp user delete <id> --reassign=<id>`. "Anyone can register" (`users_can_register`) should be off unless the site needs it.
+- **Roles.** Editor can't open Appearance → Menus, Widgets or the Site Editor; those need `edit_theme_options`, which only Administrators have by default. If the client will change their menu, Editor is the wrong role.
+
+## The handoff
+
+The site isn't done when it's live. It's done when the client can run it without you. What I hand over:
+
+- A short guide to the five things they'll actually edit, written for their site and their block names, not a generic WordPress tutorial.
+- Who to call for what: me for the site, the host for downtime, the registrar for the domain, with renewal dates.
+- Their own admin login on their own email address. Credentials shared through a password manager, never by email. Domain, hosting and premium licences in the client's name.
+- A note of anything custom, so the next developer doesn't have to guess.
+
+## Doing it with a plugin
+
+I built Launchmender because I got tired of running this list by hand. It's free on WordPress.org. It runs 44 automated checks covering most of the list above and offers one-click fixes for the safe ones: enabling indexing, setting pretty permalinks, trashing the sample content, setting the timezone from your browser, sending a test email. Each fix asks first and is logged.
+
+What software can't verify, like a form email reaching the client, goes in a manual checklist next to the checks, with twenty defaults you can edit and save as your own template. In handoff mode the client gets a Help menu in their dashboard with documentation you write in the block editor, and you get a printable pass/fail report showing who fixed what and when.
+
+[Launchmender on WordPress.org](https://wordpress.org/plugins/launchmender/) · [Plugin page](/plugins/launchmender/)

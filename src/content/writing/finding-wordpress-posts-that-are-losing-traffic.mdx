@@ -1,0 +1,102 @@
+---
+title: How to find WordPress posts that are losing traffic
+date: 2026-10-08
+lede: How to spot posts that are slowly losing clicks in Search Console, work out why from the post itself, and decide which ones are worth a refresh.
+---
+
+Nothing breaks when a post decays. There's no error, no failed cron job, no angry email. A tutorial that brought in a few hundred clicks a month two years ago brings in a third of that now, and the only way you'd notice is by going and looking, which nobody does on a blog with four hundred posts.
+
+The slow slide has a name, content decay, and the fix is unglamorous: find the posts that are losing clicks, work out why, and refresh the few that are worth it. Search Console and a handful of wp-cli commands cover most of it.
+
+## Start with the clicks, not the dates
+
+The tempting first move is to sort posts by age and start at the oldest. Don't. Plenty of old posts are doing fine, and plenty of last year's posts are already sliding.
+
+In Search Console, open Performance, then Search results, click the date filter and switch to the Compare tab. Compare the last three months with the previous period, or with the same months a year earlier if your topics are seasonal. A post about tax deadlines will always look like it's collapsing in May. Then open the Pages tab. With a comparison on, the table gets a Difference column; sort by the clicks difference and the biggest losers rise to the top. Export it. You'll want it in a spreadsheet later.
+
+Ignore small numbers. A page that went from 12 clicks to 5 is noise.
+
+Before touching a post, click it to filter the report to that page and look at its Queries tab with the same comparison. That tells you what kind of loss it is:
+
+- Position dropped for the queries that used to send clicks. Something outranks you now, and this is the case a refresh can fix.
+- Position held but impressions fell. Fewer people search for it, and no rewrite creates demand.
+- Position and impressions held but clicks fell. The results page changed around you, or your title stopped earning the click. Look at the title and meta description before rewriting the body.
+
+## What the post itself usually tells you
+
+Open each post on the shortlist and the reasons are usually sitting on the page.
+
+**When it was last really updated.** WordPress keeps a modified date, but `wp_insert_post()` sets it to the current time on every save, so a typo fix or a bulk category change counts as an update. Read it as "nobody has touched this since", not "someone checked this then". To list published posts untouched for a year, oldest first:
+
+```sh
+wp post list --post_type=post --post_status=publish \
+  --date_query='[{"column":"post_modified","before":"12 months ago"}]' \
+  --orderby=modified --order=ASC \
+  --fields=ID,post_modified,url --format=csv > untouched.csv
+```
+
+wp-cli decodes the JSON and passes it to `WP_Query`. The relative date is resolved in the site's timezone, which is why the clause uses `post_modified` and not `post_modified_gmt`. The `url` column lines up with the page URLs in the Search Console export.
+
+**Years and version numbers that have aged.** "Best hosting in 2022", "tested on PHP 7.4". Cheap to find, and the first thing a reader notices. A quoted search term is matched as a phrase:
+
+```sh
+wp post list --post_type=post --post_status=publish --s='"PHP 7"' --fields=ID,post_title
+wp post list --post_type=post --post_status=publish --s=2022 --search_columns=post_title --fields=ID,post_title
+```
+
+Keep bare year searches to titles (`search_columns` needs WordPress 6.2 or later). In the body, `2022` also matches image paths like `/uploads/2022/05/` (WordPress files uploads by year and month by default), so you get every post with a picture from that year.
+
+**Broken outbound links.** A tutorial whose key references now 404 has quietly become worse than whatever replaced it. For one post:
+
+```sh
+wp post get 123 --field=post_content \
+  | grep -oE 'href="https?://[^"]+"' | cut -d'"' -f2 | sort -u \
+  | while read -r url; do
+      echo "$(curl -s -o /dev/null -L -m 10 -w '%{http_code}' "$url") $url"
+    done
+```
+
+Anything that isn't a 200 deserves a look, and `000` means no answer at all. Some sites return 403 to scripts and work fine in a browser, so open the link before you replace it.
+
+**Thin content.** Not a word count rule. Search the post's main query yourself and compare what ranks now with what you wrote. If everything above you covers setup, common errors and alternatives, and yours covers setup, that's the gap.
+
+**No internal links pointing to it.** A post nothing else links to is usually one you forgot about too. Searching post content for its slug finds links written as normal permalinks:
+
+```sh
+wp post list --post_type=post,page --post_status=publish \
+  --s=the-post-slug --search_columns=post_content --fields=ID,post_title
+```
+
+An empty result is a strong hint. It won't see links in menus, widgets or page-builder data stored outside `post_content`.
+
+## Prioritise by lost clicks and staleness together
+
+Age alone is the wrong sort key. A five-year-old post that still gets its clicks doesn't need you. A post from last spring that lost half its traffic does.
+
+I put the Search Console export next to the post list and give each candidate two numbers: clicks lost, and how many of the signals above it shows. Multiply them. A post that lost 400 clicks with 2021 in the title, two dead links and no internal links goes to the top. A post that lost 400 clicks and looks fine on the page goes lower, because the cause is probably outside the post and a refresh would be a guess. A post that lost 20 clicks waits, however stale it is.
+
+## What a refresh should actually change
+
+A refresh is not a new date. Moving the publish date, or re-saving so the modified date moves, makes a 2021 post look current without making it better, and readers notice at the first outdated screenshot. Google's [guide to people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content) lists changing dates to look fresh, without substantial changes, as a warning sign.
+
+What does count:
+
+- Re-test anything procedural on current versions and fix what changed, screenshots included.
+- Answer the queries the page now gets impressions for but doesn't address. They're in that Queries tab.
+- Replace dead links with current sources instead of unlinking them.
+- Link to it from two or three newer posts that get traffic, and from it to them.
+- If two thin posts cover the same thing, merge them into the stronger URL and 301 the other.
+
+Then let the date move. If your theme prints the modified date with `the_modified_date()`, it's now telling the truth.
+
+## Make it a weekly habit
+
+Decay is slow, so a yearly audit always finds a pile. Half an hour a week works better: open the comparison, take the top one or two posts, refresh them, and note the date and what you changed. Look at those pages again a month or so later with the same comparison. Over time you learn which kinds of fixes move clicks on your site and which don't.
+
+## If you'd rather not keep the spreadsheet
+
+I built Stalemender to do most of the above inside wp-admin. It's free on [WordPress.org](https://wordpress.org/plugins/stalemender/). Every post gets a Freshness Score from 0 to 100 and the reasons behind it, from the same signals as above: age since the last update or editorial review, outdated years and phrases quoted in context, length against the typical post of its type, internal links pointing in, broken outbound links (that check is off by default) and the Search Console trend, plus a few structural checks.
+
+Search Console is optional. Connected, it syncs nightly, compares each page's clicks over the last 28 days with the 28 before, and flags the ones that are decaying. The "refresh next" list ranks posts that aren't fresh by how stale they are and how much search traffic they have at stake, with inbound internal links standing in when Search Console isn't connected. Marking a post reviewed resets its age clock without touching the post's dates.
+
+There's also an optional AI refresh brief, off by default. The details are on the [plugin page](/plugins/stalemender/).

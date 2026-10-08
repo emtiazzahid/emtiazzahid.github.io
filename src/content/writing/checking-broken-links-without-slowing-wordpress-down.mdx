@@ -1,0 +1,132 @@
+---
+title: How to check for broken links without slowing WordPress down
+date: 2026-10-08
+lede: Why link checkers slow WordPress down and get blocked by the sites they check, and how to check politely with background batches, HEAD and retries.
+---
+
+Two complaints tend to arrive together. The site got slow after someone installed a link checker, and the checker says 300 links are broken, but the five they clicked load fine.
+
+Both come from checking impatiently. Your server is a guest on every site you link to, and it should check like one.
+
+## Where the slowness comes from
+
+The worst version checks links while a post is saved or rendered. PHP waits on each outbound request, and core's HTTP API gives every one a 5-second timeout by default, so eight slow hosts hold the editor for 40 seconds.
+
+The next worst checks everything in one batch. By default WP-Cron runs it in a separate request, so visitors don't wait, but it holds a PHP worker for the whole loop, and the cron lock expires after `WP_CRON_LOCK_TIMEOUT` (60 seconds by default), so the next page load can spawn a second run beside it.
+
+GET makes it worse: core sets no size limit unless you pass `limit_response_size`, so checking a link to a 40 MB PDF downloads 40 MB to learn one number. HEAD asks for headers only.
+
+And a loop has no manners. If 200 posts link to the same documentation site, a naive checker asks it 200 times in a row. Rate limiters answer 429, firewalls block your server's IP, and every link to that host now looks broken.
+
+The false positives come from the other end. Many sites refuse anything that isn't a browser, with a 403, a non-standard 999 or a challenge page. Some are just slow. Some hosts block outbound HTTP, and if `wp-config.php` defines `WP_HTTP_BLOCK_EXTERNAL`, every request to an outside host not in `WP_ACCESSIBLE_HOSTS` returns a `WP_Error` without leaving the server. A checker that reads every error as "broken" reports the whole site.
+
+## Checking politely
+
+Work in the background in small batches: 20 URLs, a time budget well under a minute, then `wp_schedule_single_event()` for the next batch. Check each unique URL once, not once per post, and keep results for a few days. On a quiet site WP-Cron only fires when someone visits; `DISABLE_WP_CRON` in `wp-config.php` plus a system cron running `wp cron event run --due-now` every few minutes keeps batches on time and off page loads.
+
+Send HEAD first. Some servers answer HEAD with 405, 403 or even 404 for a page that loads fine, so ask those again with GET and cap the download. Core doesn't follow redirects on HEAD unless you set `redirection`, so a moved page comes back as a bare 301.
+
+Space requests to one host a couple of seconds apart, and when a 429 or 503 sends `Retry-After`, wait that long.
+
+Don't trust the first failure. A timeout, a DNS hiccup or a 500 can be a bad minute on their side. Check again hours later and call the link broken only when it fails twice.
+
+Use more than two buckets. 2xx and 3xx work for visitors, though a permanent redirect is worth updating. 404 and 410 are real once confirmed. 401, 403 and 999 say nothing about whether the page exists, so list them for a human to click. Skip `mailto:`, `tel:` and `#` links.
+
+Put together for one URL:
+
+```php
+function myprefix_check_link( string $url ): string {
+	$host = (string) wp_parse_url( $url, PHP_URL_HOST );
+	$lock = 'myprefix_host_' . md5( $host );
+
+	// Per-host spacing.
+	if ( get_transient( $lock ) ) {
+		return 'retry';
+	}
+	set_transient( $lock, 1, 2 );
+
+	$args = array(
+		'timeout'     => 10,
+		'redirection' => 5, // HEAD follows none by default.
+		'user-agent'  => 'MyLinkCheck/1.0 (+' . home_url( '/' ) . ')',
+	);
+
+	$response = wp_safe_remote_head( $url, $args );
+	$code     = (int) wp_remote_retrieve_response_code( $response );
+
+	// Retry with GET, reading at most 64 KB.
+	if ( in_array( $code, array( 403, 404, 405, 501 ), true ) ) {
+		$response = wp_safe_remote_get( $url, $args + array( 'limit_response_size' => 65536 ) );
+		$code     = (int) wp_remote_retrieve_response_code( $response );
+	}
+
+	if ( is_wp_error( $response ) ) {
+		return 'retry'; // Timeout, DNS, refused connection.
+	}
+	if ( $code >= 200 && $code < 400 ) {
+		return 'ok';
+	}
+	if ( 429 === $code || 503 === $code ) {
+		$wait = (int) wp_remote_retrieve_header( $response, 'retry-after' );
+		set_transient( $lock, 1, max( 60, $wait ) ); // A date-style Retry-After casts to 0.
+		return 'retry';
+	}
+	if ( in_array( $code, array( 401, 403, 999 ), true ) ) {
+		return 'manual';
+	}
+	return 'failed';
+}
+```
+
+The `safe` variants refuse private and loopback addresses, which matters because anyone who can write a post picks these URLs. The caller requeues `retry`, lists `manual`, and calls `failed` broken only after a second failure hours later.
+
+## Broken links and 404s are different problems
+
+A link checker asks whether your content's links still work. A 404 log records requests to your site for addresses that don't: an old slug, a deleted page, a typo in someone else's post, a bot guessing at backup files. You only find those by watching traffic, and the fix is on your side even when the bad link is on theirs.
+
+Core rescues some of these on `template_redirect`. `wp_old_slug_redirect()` sends a 301 for a post's previous slug (pages and other hierarchical types are skipped), `redirect_canonical()` guesses at the intended permalink, and `wp_redirect_admin_locations()` catches `/admin` and `/login` at priority 1000. Log after all of them:
+
+```php
+add_action( 'template_redirect', function () {
+	if ( ! is_404() ) {
+		return;
+	}
+
+	$path     = wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ?? '/' ), PHP_URL_PATH );
+	$referrer = wp_get_raw_referer();
+
+	error_log(
+		gmdate( 'c' ) . "\t" . $path . "\t" . ( $referrer ? $referrer : '-' ) . "\n",
+		3,
+		'/home/example/logs/404.log' // Somewhere the web server does not serve.
+	);
+}, 1001 );
+```
+
+A file append is cheap, even when a bot works through a list of made-up paths. After a week:
+
+```sh
+cut -f2 /home/example/logs/404.log | sort | uniq -c | sort -rn | head -20
+```
+
+The top paths with real referrers are the ones worth fixing.
+
+## Fixing each one
+
+For an outbound link there are three honest fixes. If the page moved, edit the link, using the old URL's redirect destination if it lands on a real page rather than a home page. For a URL in many posts, wp-cli replaces it in one pass; it writes straight to the database and saves no revisions, so read the dry run first:
+
+```sh
+wp search-replace 'https://old.example.com/guide/' 'https://example.com/docs/guide/' wp_posts --dry-run
+```
+
+If the sentence reads fine without the link, unlink it and keep the text. If the source is gone and the link was a citation, find it on the Wayback Machine at web.archive.org, pick a capture from around when you wrote the post, check it shows what you cited, and say it's an archived copy.
+
+For a 404 on your own site, use a 301 when the content moved. When it's gone with no successor, leave the 404 or send a 410. Don't point everything at the home page; a visitor who wanted a specific article has still hit a dead end, just a more confusing one.
+
+## Doing this automatically
+
+I built Waymender, a free plugin on WordPress.org, to run these steps for you. It checks links and images in posts, pages, custom fields, widgets, custom menu links and page-builder data in background batches, 2 seconds apart per domain by default. It sends HEAD with a GET fallback, pauses a domain that answers 429 or 503 for its `Retry-After` time (an hour if none is given), and calls a link broken only after two failures at least six hours apart (a manual recheck skips the wait). Known anti-bot sites are never requested; they're listed for you to check by hand.
+
+The fixes are the ones above: edit the URL, unlink and keep the text, use the closest Wayback Machine copy, or create a redirect for a broken internal link. Its 404 log keeps hit counts, referrers and a suggested target, and turns an entry into a 301, 302, 307 or 410 rule in one click.
+
+It's on [WordPress.org](https://wordpress.org/plugins/waymender/), and there's more on [its page here](/plugins/waymender/).
