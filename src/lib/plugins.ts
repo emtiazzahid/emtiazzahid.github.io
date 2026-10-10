@@ -164,7 +164,7 @@ export const PLUGINS: Plugin[] = [
     version: '1.0.0',
     requiresWp: '6.6',
     requiresPhp: '7.4',
-    status: 'review',
+    status: 'live',
     intro: [
       'Internal links are the cheapest SEO win there is, and the easiest one to forget. Anchormender builds a small search index of your own content and uses it to suggest links at the moment you are writing, with the sentence that fits and an anchor phrase already picked.',
       'Nothing leaves your server unless you turn on AI reranking, through the provider you connected in WordPress 7.0+ or with your own API key, and even then you see the token estimate first.',
