@@ -1,0 +1,124 @@
+---
+title: How to find orphan posts and add internal links in WordPress
+date: 2026-10-10
+lede: Find the WordPress posts nothing else links to with wp-cli and a short PHP script, then add internal links people will actually follow.
+---
+
+An orphan post is one that no other post on your site links to. It's published, it's in the sitemap, it may even rank. But nobody reading your other posts will ever be sent there.
+
+WordPress hides the problem well. The blog archive, category pages and core's XML sitemap list every post, so technically nothing is unreachable. In practice, a post that only appears on page 30 of the archive has no way in. The links that matter are the ones inside other posts, in a sentence, next to a reason to click.
+
+Google says it uses links to judge relevance and to find new pages to crawl ([link best practices](https://developers.google.com/search/docs/crawling-indexing/links-crawlable)). A sitemap covers discovery. It doesn't tell anyone why the page matters, and readers never see it.
+
+## Count the links you already have
+
+You don't need a crawler for a first pass. In-content links live in `post_content`, and core can turn a URL back into a post ID. Save this as `count-links.php`:
+
+```php
+<?php
+$ids = get_posts(
+	array(
+		'post_type'      => array( 'post', 'page' ),
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+	)
+);
+
+$inbound  = array_fill_keys( $ids, array() );
+$outbound = array_fill_keys( $ids, array() );
+
+foreach ( $ids as $id ) {
+	$html = new WP_HTML_Tag_Processor( get_post_field( 'post_content', $id, 'raw' ) );
+
+	while ( $html->next_tag( 'a' ) ) {
+		$href = $html->get_attribute( 'href' );
+		if ( ! is_string( $href ) || '' === $href || '#' === $href[0] ) {
+			continue;
+		}
+
+		$target = url_to_postid( $href );
+		if ( $target && $target !== $id && isset( $inbound[ $target ] ) ) {
+			$inbound[ $target ][ $id ] = true; // Each linking post counts once.
+			$outbound[ $id ][ $target ] = true;
+		}
+	}
+}
+
+$counts = array_map( 'count', $inbound );
+asort( $counts );
+
+echo "inbound\toutbound\tID\turl\n";
+foreach ( $counts as $id => $count ) {
+	printf( "%d\t%d\t%d\t%s\n", $count, count( $outbound[ $id ] ), $id, get_permalink( $id ) );
+}
+```
+
+```sh
+wp eval-file count-links.php > links.tsv
+```
+
+One row per published post or page: inbound links from other posts, outbound links, ID and URL, fewest inbound first. The zeros at the top are your orphans. The ones and twos below them are weakly linked, one edit away from joining them.
+
+`WP_HTML_Tag_Processor` (core since 6.2) reads each `href` without a regex. `url_to_postid()` does more than match full permalinks: it drops `#fragments`, doesn't care about `http` versus `https` or `www`, and resolves root-relative links like `/pricing/` as well as `?p=123` links, which a plain search for the slug would never find.
+
+What it still misses:
+
+- Links outside `post_content`: menus, widgets, theme templates, and page builders that store their layout elsewhere. Pages like Shop or Contact will show zero and be fine, because the menu links to them; `wp menu item list <menu> --fields=object_id,title` shows what a classic menu covers.
+- Links inside a synced pattern. They live in the pattern's own `wp_block` post, not in the posts that use it.
+- Relative paths like `../other-post/`, which `url_to_postid()` doesn't resolve.
+- Links to a post's old URL after its slug changed. Visitors get redirected, but `url_to_postid()` doesn't look at old slugs, so those links count as nothing.
+
+## Pick the post that links, then the sentence
+
+For each orphan, ask which existing posts a reader would be in when they'd want it. Search for its topic, not its slug:
+
+```sh
+wp post list --post_type=post,page --s=hydration --search_columns=post_content --fields=ID,post_title
+```
+
+`search_columns` needs WordPress 6.2 or later. From that list, prefer posts that get traffic (Search Console will tell you) and posts that are linked themselves. A link from one orphan to another is a corridor between two locked rooms.
+
+Then find the sentence. The best one already talks about the target's subject, so the link answers a question the reader has right then. You can write a new sentence, but if the post has no natural place for one, it's probably the wrong source.
+
+## Anchor text that says where it goes
+
+The anchor should tell the reader what they'll get. Google's guide asks for anchor text that is descriptive, reasonably concise and relevant to both pages. "Click here" and "read more" fail that, and so does a bare URL.
+
+```html
+<!-- Vague -->
+<p>Hydration matters here. <a href="/2026/08/29/understanding-dough-hydration/">Click here</a> to learn more.</p>
+
+<!-- Descriptive, in a sentence already about the topic -->
+<p>A stiff starter is easier to judge once you know <a href="/2026/08/29/understanding-dough-hydration/">how hydration changes a dough</a>.</p>
+```
+
+Don't give every link to a post the same anchor either. If ten posts link to the hydration guide with the exact words "dough hydration", the links read as pasted. Let the phrase come from the sentence it sits in: "how much water the dough takes", "hydration percentages", "a wetter dough". And don't cram keywords into anchors; Google's guide treats that as spam.
+
+## How many links is enough
+
+There's no number in core, and Google's guide says there's "no magical ideal number of links". What I aim for: every post I want to keep has at least one link from a related post's content, posts that matter get a few from posts that bring in visitors, and a paragraph rarely carries more than one or two. That last part is about reading, not ranking. A paragraph with four links asks for four decisions.
+
+My test is whether I'd add the link if search engines didn't exist. If I'm adding it to move a number in a spreadsheet, I stop.
+
+## Keep the links working
+
+Change the slug of a published post and WordPress remembers the old one. `wp_check_for_changed_slugs()`, hooked to `post_updated`, stores it in `_wp_old_slug` post meta, and `wp_old_slug_redirect()` on `template_redirect` answers a 404 on the old slug with a 301 to the current permalink. Two catches. It skips hierarchical post types, so pages get nothing. Core's loose 404 guess, `redirect_guess_404_permalink()`, may still land visitors on a post whose slug starts with the old one, but that's luck. And even for posts, a redirect is a detour, not a fix. Update the links:
+
+```sh
+wp search-replace '/2024/03/21/old-slug/' '/2024/03/21/new-slug/' wp_posts --include-columns=post_content --dry-run
+```
+
+Use your own table prefix, check the count, then run it again without `--dry-run`.
+
+Unpublishing is worse. Switch a post to draft or private, or trash it, and logged-out visitors following a link to it hit a 404 or, at best, that loose guess. Trashing also renames the slug with a `__trashed` suffix, and since the post isn't published when that happens, no old slug is stored. Before you unpublish anything, find the posts that link to it and point those links somewhere useful, or set up a redirect.
+
+Rerun the script every month or so and look for inbound counts that dropped to zero.
+
+## If you'd rather not keep the spreadsheet
+
+I built Anchormender to do this inside wp-admin. It's free on [WordPress.org](https://wordpress.org/plugins/anchormender/). It indexes your published posts on your own server and, in the block editor sidebar, suggests posts to link to, each with the sentence in your draft that fits best and an anchor you can change before inserting. The classic editor gets a meta box.
+
+The link report shows inbound and outbound internal links for every post, filters for orphans and posts with fewer than two inbound links, and exports CSV. It reads links from post content too, so the menu caveat above applies. From an orphan you can pick suggested source posts and link from them. Bulk linking takes up to 50 posts per batch and shows every proposed link with its sentence and anchor before anything changes. Each batch can be undone; Undo skips any of its links you've changed since. Fixing an orphan and bulk linking only use a paragraph that has no link yet (by default), and links never go inside headings, existing links, code or buttons.
+
+A weekly audit lists links to posts that have since been unpublished, trashed or deleted, generic anchors like "click here", anchors over-used for one post, and links to noindex pages. An AI rerank of suggestions is optional and off by default. The details are on the [plugin page](/plugins/anchormender/).
