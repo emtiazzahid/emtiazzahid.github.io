@@ -186,4 +186,35 @@ export const PLUGINS: Plugin[] = [
       'AI rerank with a token estimate before anything is sent.',
     ],
   },
+  {
+    slug: 'repeatwright',
+    name: 'Repeatwright',
+    fullName: 'Repeatwright – Customer Segments, RFM & Retention for WooCommerce',
+    tagline:
+      'Customer segments, RFM scores, repeat rate, LTV and cohort retention for WooCommerce, with segment export and one-off emails. Your data stays on your server.',
+    version: '1.0.0',
+    requiresWp: '6.6',
+    requiresPhp: '7.4',
+    status: 'review',
+    intro: [
+      'Repeatwright turns your existing WooCommerce orders into customer intelligence. It groups every customer into one of eleven RFM segments (Champions, Loyal, At Risk, Can\'t Lose, Lost and so on), shows your repeat rate and lifetime value, and lets you act on a segment without exporting to a third-party tool.',
+      'Everything is computed from the orders table on your own server. HPOS and legacy order storage are both supported.',
+    ],
+    features: [
+      { title: 'Overview', text: 'Repeat rate, average lifetime value, orders per customer, median days between orders and 90-day active customers. By default the repeat rate is compared with the previous period.' },
+      { title: 'RFM grid', text: 'Customer count, revenue and share per segment. Click a tile to see the customers.' },
+      { title: 'Customers', text: 'Filter by segment, spend, orders, last order date, country, acquisition source, tag, product, category or coupon. Export CSV, copy emails, add tags, or create a coupon restricted to those customers.' },
+      { title: 'Segment builder', text: 'Saved segments with a live count, refreshed on a schedule.' },
+      { title: 'Cohort retention', text: 'Monthly acquisition cohorts and how much of each still buys.' },
+      { title: 'Segment emails', text: 'One-off emails through the WooCommerce mailer with merge tags, consent summary and unsubscribe handling.' },
+    ],
+    screenshots: [
+      'Overview with KPIs and the RFM segment grid.',
+      'Customers list with filters and bulk actions.',
+      'Segment builder with live count.',
+      'Cohort retention heatmap.',
+      'Customer drawer with order timeline and RFM explanation.',
+      'Segment email composer with merge tags and consent summary.',
+    ],
+  },
 ];
