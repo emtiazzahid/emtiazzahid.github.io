@@ -195,7 +195,7 @@ export const PLUGINS: Plugin[] = [
     version: '1.0.0',
     requiresWp: '6.6',
     requiresPhp: '7.4',
-    status: 'review',
+    status: 'live',
     intro: [
       'Repeatwright turns your existing WooCommerce orders into customer intelligence. It groups every customer into one of eleven RFM segments (Champions, Loyal, At Risk, Can\'t Lose, Lost and so on), shows your repeat rate and lifetime value, and lets you act on a segment without exporting to a third-party tool.',
       'Everything is computed from the orders table on your own server. HPOS and legacy order storage are both supported.',
