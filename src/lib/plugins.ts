@@ -218,7 +218,7 @@ export const PLUGINS: Plugin[] = [
     ],
   },
   {
-    slug: 'sticky-add-to-cart-bar-for-woocommerce',
+    slug: 'hoverbuy-sticky-add-to-cart-bar-for-woocommerce',
     name: 'Hoverbuy',
     fullName: 'Hoverbuy – Sticky Add to Cart Bar for WooCommerce',
     tagline:
