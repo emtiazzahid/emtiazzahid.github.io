@@ -248,4 +248,35 @@ export const PLUGINS: Plugin[] = [
       'Design settings with the live preview, updated before you save.',
     ],
   },
+  {
+    slug: 'dynafield-custom-field-dynamic-tags-for-elementor',
+    name: 'Dynafield',
+    fullName: 'Dynafield – Custom Field Dynamic Tags for Elementor',
+    tagline:
+      'Shows ACF, Secure Custom Fields, Pods, Meta Box and post meta values in free Elementor through dynamic tags for text, links, images, galleries, numbers, colours and dates.',
+    version: '1.0.0',
+    requiresWp: '6.6',
+    requiresPhp: '7.4',
+    status: 'review',
+    intro: [
+      'Dynafield adds a Custom Fields group to the dynamic tags menu of free Elementor, so a Heading, Image, Button, Counter or any other widget setting that takes dynamic text, links, images, galleries, numbers or colours can show a value from ACF, Secure Custom Fields, Pods, Meta Box, post meta, term meta, user meta or a site option. Elementor Pro is not needed.',
+      'Each tag has a field picker that lists the custom fields of the source you choose, and most tags have formatting options and a fallback for when the field is empty. Output is escaped for its context, and the plugin makes no requests to other servers.',
+    ],
+    features: [
+      { title: 'Seven tags', text: 'Field (Text), Field (URL), Field (Image), Field (Gallery), Field (Number), Field (Colour) and Field (Date), in their own Custom Fields group.' },
+      { title: 'Seven places to read from', text: 'Current post, Post author, Current term, Current user, Options page, Site option and Specific post ID.' },
+      { title: 'Field picker', text: 'Lists ACF/SCF field groups, Pods fields, Meta Box fields and the custom field keys used by the post type you are editing, labelled with the field type. You can also type a key by hand.' },
+      { title: 'Formatting and fallbacks', text: 'Date and number formats, letter case, a separator for fields with several values, and Before and After text. Empty fields show fallback text, a fallback URL, image or colour; the Gallery tag has no fallback.' },
+      { title: 'Links, images and dates', text: 'Page links and post objects give their permalink, email addresses a mailto: link and phone numbers a tel: link. Images can be stored as an ID, an array or a media library URL, and dates as ACF date picker values, Unix timestamps or ISO 8601, shown in the site format, a custom format or as relative time.' },
+      { title: 'Protected data', text: 'Keys whose names contain password, token or secret, and keys such as wp_capabilities and session_tokens, are never read by any tag, even when typed by hand. The Site option source reads only option names an administrator lists, by default the site title and tagline.' },
+    ],
+    screenshots: [
+      'Put any custom field in a Heading with the Field (Text) tag: source, field, format and fallback in one panel.',
+      'No keys to remember: the field picker lists your ACF field groups with each field\'s type.',
+      'Show an image field in the free Image widget with Field (Image), sized by the widget.',
+      'Link a Button to the URL stored in a link field.',
+      'Format dates your way, or show them as "3 days ago".',
+      'See which field plugins were detected and choose what editors may read on the settings page.',
+    ],
+  },
 ];
