@@ -226,7 +226,7 @@ export const PLUGINS: Plugin[] = [
     version: '1.0.0',
     requiresWp: '6.6',
     requiresPhp: '7.4',
-    status: 'review',
+    status: 'live',
     intro: [
       'When a shopper scrolls past the product\'s own Add to cart button, Hoverbuy slides in a slim bar at the bottom or top of the screen with the product image, name, price, a quantity box and an Add to cart button. It does not need a particular theme: it works from the add-to-cart form WooCommerce prints on the product page.',
       'The bar\'s button does not add anything to the cart by itself. It presses the page\'s own Add to cart button or submits the product\'s own form, so WooCommerce adds exactly what the form holds: the chosen variation, the quantity and any fields other plugins put in the form.',
