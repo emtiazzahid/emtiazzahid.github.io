@@ -257,7 +257,7 @@ export const PLUGINS: Plugin[] = [
     version: '1.0.0',
     requiresWp: '6.6',
     requiresPhp: '7.4',
-    status: 'review',
+    status: 'live',
     intro: [
       'Dynafield adds a Custom Fields group to the dynamic tags menu of free Elementor, so a Heading, Image, Button, Counter or any other widget setting that takes dynamic text, links, images, galleries, numbers or colours can show a value from ACF, Secure Custom Fields, Pods, Meta Box, post meta, term meta, user meta or a site option. Elementor Pro is not needed.',
       'Each tag has a field picker that lists the custom fields of the source you choose, and most tags have formatting options and a fallback for when the field is empty. Output is escaped for its context, and the plugin makes no requests to other servers.',
