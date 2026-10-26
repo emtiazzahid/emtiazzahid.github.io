@@ -310,4 +310,35 @@ export const PLUGINS: Plugin[] = [
       'Copy rules between products and find every product that uses per-product shipping.',
     ],
   },
+  {
+    slug: 'bloatwright',
+    name: 'Bloatwright',
+    fullName: 'Bloatwright – Performance Profiler & Site Speed Audit',
+    tagline:
+      'Measures the PHP time, database queries, front-end assets, autoloaded options and cron load of every plugin on real pages.',
+    version: '1.0.0',
+    requiresWp: '6.6',
+    requiresPhp: '7.4',
+    status: 'review',
+    intro: [
+      'Bloatwright answers one question: which plugins make this site slow, and by how much? Click Run profile and it requests a handful of typical pages from your own server, several times each, with a profiler attached to those requests only, then charges the time, queries and kilobytes to the plugin that caused them.',
+      'Pick a plugin and re-run the same pages with it filtered out of the profiling requests only. You see the before and after of every page without deactivating anything for visitors.',
+    ],
+    features: [
+      { title: 'Per-plugin PHP time', text: 'Self time in hook callbacks plus main-file load time, with nested hooks charged to the plugin that did the work, averaged per page.' },
+      { title: 'Database queries', text: 'Count and time per plugin with the slowest queries and their caller.' },
+      { title: 'Front-end assets', text: 'What each plugin serves on front-end pages, its size, whether it blocks rendering, and libraries loaded twice by different plugins.' },
+      { title: 'Autoload and cron', text: 'Autoloaded options and cron events by owner, including cron hooks with no callback attached.' },
+      { title: 'Weight score and verdicts', text: 'A relative score from PHP time, query time, render-blocking KB, autoload KB and cron runs per day, plus a plain-language verdict where a rule applies.' },
+      { title: 'History, compare, export', text: 'Sessions are kept, a session can be compared with the previous one after an update, and each exports as a self-contained HTML report. Browse-and-profile mode for hosts that block loopback requests.' },
+    ],
+    screenshots: [
+      'Ranked results: weight, PHP time, queries, front-end KB, autoload, cron and verdicts.',
+      'Expanded plugin row: PHP per URL, slowest hooks and queries, assets and options.',
+      'Try without: the same pages measured with one plugin filtered out.',
+      'Autoloaded options by owner.',
+      'A session compared with the previous one after an update.',
+      'Self-contained HTML export.',
+    ],
+  },
 ];
