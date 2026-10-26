@@ -288,7 +288,7 @@ export const PLUGINS: Plugin[] = [
     version: '1.0.0',
     requiresWp: '6.6',
     requiresPhp: '7.4',
-    status: 'review',
+    status: 'live',
     intro: [
       'Shipeach lets you set a shipping cost on each product and each variation, by country, state or postcode, and WooCommerce charges it, either as its own shipping method in your zones or on top of your other shipping methods. It is for stores where shipping depends on the item rather than the cart: furniture, art, plants, bulky or fragile goods, drop-shipped items with supplier-set shipping.',
       'Rates are calculated on the server, so the classic cart and checkout, the block cart and checkout and the Store API all show the same amounts. It does not fetch carrier rates, print labels or pack boxes. Shipeach is an independent plugin and is not affiliated with WooCommerce or Automattic.',
