@@ -137,4 +137,61 @@ export const LAB: LabProject[] = [
       'The Bengali landing page: the whole product exists twice, and says plainly that there is no card and no paid tier.',
     ],
   },
+  {
+    slug: 'skillswap',
+    name: 'SkillSwap',
+    tagline:
+      'A community noticeboard where neighbours trade skills instead of money: pin what you can teach, pin what you want to learn, and the board finds the pairs that work both ways.',
+    year: '2026',
+    status: 'live',
+    liveUrl: 'https://skillswap.emtiazzahid.workers.dev',
+    repoUrl: 'https://github.com/emtiazzahid/skillswap',
+    stack: ['SvelteKit 2', 'Svelte 5', 'Cloudflare Workers', 'D1', 'KV', 'Drizzle', 'GitHub OAuth'],
+    intro: [
+      'Someone on your street can teach guitar. Someone two doors down would pay for that, and could fix your spreadsheets in return. SkillSwap is the noticeboard that puts those two people in the same place: pin an offer for what you can teach, a want for what you would like to learn, and the board shows who matches.',
+      'The rules are the product. No money changes hands — a title with a price in it gets bounced. No ratings, no stars, no algorithm ranking people by worth. The only reputation is a one-line thank-you note left after a swap, which sticks to the other person’s profile.',
+      'Any group can run its own board: a neighbourhood, a campus hall, a Discord server. Boards can be open or invite-only, and whoever starts one moderates it.',
+    ],
+    features: [
+      {
+        title: 'Offers and wants',
+        text: 'Each notice carries a category, a level, a format and when you are free. Titles that mention money, fees or selling are refused at the door.',
+      },
+      {
+        title: 'Reciprocal matching',
+        text: 'The matches page pairs people who want what you offer and offer what you want, with a separate list of people you could simply help for nothing. The score is a plain bigram similarity between titles plus a category and format bonus, so every match can explain itself in a sentence — there is no model in the loop.',
+      },
+      {
+        title: 'Swaps, not transactions',
+        text: 'Request a swap with a note and an optional offer in return. Accepting unlocks exactly one contact method each way, and either side can decline with a reason, cancel, mark it done or leave a thank-you note.',
+      },
+      {
+        title: 'Moderation that fits a volunteer',
+        text: 'Your first notice on a board waits for a nod; after that you are trusted. Three flags from different people hide a notice until a moderator looks. Owners can name moderators, ban and issue invite links.',
+      },
+      {
+        title: 'Reachable by keyboard, and small',
+        text: 'One test sweeps eighteen routes with axe and fails on any serious violation, another drives post, request and accept with the keyboard alone, and a third fails the build if the board page ships more than 48 KB of JavaScript.',
+      },
+      {
+        title: 'Boards that stay current',
+        text: 'Notices expire after ninety days and renew in one click, with a daily cron sending the reminders and clearing up behind itself.',
+      },
+      {
+        title: 'Careful with the little data it holds',
+        text: 'Sign-in goes through GitHub, so there are no passwords to store. Contact details are encrypted at rest with AES-GCM and shown only to someone whose swap you accepted, and the service worker refuses to cache the inbox, the account pages or anything under moderation. No analytics, no tracking pixels. It installs as a PWA and has an offline page.',
+      },
+    ],
+    build: [
+      'Built with Claude Code as the pair in a single day — twelve commits between breakfast and mid-afternoon, from empty folder to a deployed app with a database behind it. That is the clearest measure I have of what this way of working changes: the gap between an idea worth building and a URL you can send someone is now an afternoon.',
+      'The design came first and stayed in charge: nine static HTML mockups and one shared stylesheet are the source of truth in the repository, and the app imports that same CSS, so the built product cannot quietly drift from the drawing. Tests are what make a day like this safe — 112 unit tests inside the real Workers runtime against a local D1, and 37 Playwright specs through sign-in, posting, the swap flow, moderation, accessibility and the size budget.',
+      'It fits in Cloudflare’s free tier — Workers, D1, KV and a cron trigger — and it is MIT licensed with a self-hosting guide, so a community that wants its own board can run one without me.',
+      'Honest ending: it is finished software with no users. The deploy is healthy and the database is empty, because building it was an afternoon and getting one neighbourhood onto it is the part I never did. Google sign-in is written but never provisioned on the live site for the same reason.',
+    ],
+    shots: [
+      'A board with notices pinned to it: offers on torn paper, filters down the side, and the categories a neighbourhood actually uses.',
+      'Your matches: what you teach them beside what they teach you, each pair saying why it matched, and below it the people you could simply help.',
+      'The same board on a phone, which is where a neighbour would actually read it.',
+    ],
+  },
 ];
