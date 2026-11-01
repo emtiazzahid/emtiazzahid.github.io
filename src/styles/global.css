@@ -756,6 +756,60 @@ hr {
   }
 }
 
+/* --- Lab ----------------------------------------------------------------- */
+
+.lab {
+  border-top: 1px solid var(--rule-strong);
+  margin-top: 32px;
+}
+
+.lab-row {
+  display: block;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.lab-row:hover .lab-row__name {
+  color: var(--accent);
+}
+
+.lab-row__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+}
+
+.lab-row__name {
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.lab-row__status {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lab-row__tagline {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+  max-width: var(--measure);
+}
+
+.lab-row__stack {
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
 /* --- Plugins ------------------------------------------------------------- */
 
 .plugins {

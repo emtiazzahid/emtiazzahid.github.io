@@ -22,10 +22,11 @@ export const SITE = {
   postsOnHome: 3,
 };
 
-/** Nav entries. "Work" gets added here when the projects page lands. */
+/** Nav entries. */
 export const NAV = [
   { href: '/writing/', label: 'Writing' },
   { href: '/plugins/', label: 'Plugins' },
+  { href: '/lab/', label: 'Lab' },
   { href: '/about/', label: 'About' },
   { href: '/contact/', label: 'Contact' },
 ];

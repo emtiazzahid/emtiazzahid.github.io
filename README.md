@@ -95,7 +95,8 @@ src/
   diagrams/              hand-authored SVG, inlined by <Figure>
   layouts/BaseLayout     html shell, SEO tags, nav + footer
   components/            Nav, Footer, PostRow, Figure
-  pages/                 /, /about, /contact, /writing, /writing/[slug], /rss.xml, 404
+  lib/lab.ts             the /lab/ project entries
+  pages/                 /, /about, /contact, /writing, /plugins, /lab, /rss.xml, 404
   styles/global.css      all styling; design tokens live in :root
   lib/posts.ts           sorting, year grouping, date + reading-time formatting
 public/                  favicon, og.png, robots.txt — copied verbatim
@@ -107,8 +108,26 @@ scripts/                 HTML sources for the social image, rendered by npm run 
 - **Accent colour** — `--accent` in `src/styles/global.css`. The design ships alternates:
   `#166d4e` green, `#a8501f` rust, `#191919` mono.
 - **Booking link, email, GitHub, posts-on-home** — `src/consts.js`.
-- **Adding a Work/Projects page** — add the route under `src/pages/`, then add it to
-  `NAV` in `src/consts.js`. The nav has a deliberate empty slot for it.
+- **Adding a page** — add the route under `src/pages/`, then add it to `NAV` in
+  `src/consts.js`.
+
+## Lab projects
+
+Side projects live under `/lab/`. One entry per project in `src/lib/lab.ts`, and the
+list page plus a detail page are generated from it — the same shape as `/plugins/`.
+
+| Field | Notes |
+| --- | --- |
+| `slug` | The URL: `/lab/<slug>/`, and the screenshot folder `public/lab/<slug>/` |
+| `tagline` | One sentence. Shown on the index and used as the meta description |
+| `status` | `live` or `building` |
+| `liveUrl` / `repoUrl` | Both optional — omit `repoUrl` for a private repository |
+| `stack` | Short labels, most defining first |
+| `intro` / `features` / `build` | The three sections of the page. `build` is the AI-pair story |
+| `shots` | Captions, in order. Image N is `public/lab/<slug>/shot-N.png` |
+
+Screenshots are plain PNGs at about 1440px wide; a headless Chrome window at
+1440×900 matches the rest. Keep each one under roughly 800 KB.
 
 ## Custom domain later
 

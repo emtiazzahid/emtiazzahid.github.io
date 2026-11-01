@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../consts.js';
+import { LAB, statusLabel } from '../../lib/lab';
+
+const description =
+  'Side projects by Emtiaz Zahid, built with an AI pair in evenings and weekends: a webcam game for kids, a family tree on the edge, and what shipping this way actually takes.';
+---
+
+<BaseLayout title={`Lab — ${SITE.title}`} description={description}>
+  <section class="section">
+    <h1 class="page-title">Lab</h1>
+    <p class="page-intro">
+      Things I build outside client work, with an AI pair doing most of the typing. Each one
+      shipped: a URL you can open, a repository you can read. The notes on each page say how it
+      was actually built, including the parts that did not go well.
+    </p>
+
+    <div class="lab">
+      {
+        LAB.map((project) => (
+          <a class="lab-row" href={`/lab/${project.slug}/`}>
+            <div class="lab-row__head">
+              <span class="lab-row__name">{project.name}</span>
+              <span class="lab-row__status">
+                {statusLabel(project)} · {project.year}
+              </span>
+            </div>
+            <p class="lab-row__tagline">{project.tagline}</p>
+            <p class="lab-row__stack">{project.stack.join(' · ')}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

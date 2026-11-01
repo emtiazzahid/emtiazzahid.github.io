@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../consts.js';
+import { LAB, statusLabel } from '../../lib/lab';
+
+export function getStaticPaths() {
+  return LAB.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const host = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: project.name,
+  description: project.tagline,
+  applicationCategory: 'WebApplication',
+  ...(project.liveUrl ? { url: project.liveUrl } : {}),
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Person', name: SITE.author, url: SITE.url },
+  screenshot: project.shots.map(
+    (_caption, i) => new URL(`/lab/${project.slug}/shot-${i + 1}.png`, SITE.url).href,
+  ),
+};
+---
+
+<BaseLayout title={`${project.name} — ${SITE.title}`} description={project.tagline}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
+  {
+    project.shots.length > 0 && (
+      <meta
+        slot="head"
+        property="og:image"
+        content={new URL(`/lab/${project.slug}/shot-1.png`, SITE.url).href}
+      />
+    )
+  }
+
+  <article class="section plugin">
+    <div class="eyebrow">Lab</div>
+    <h1 class="plugin__title page-title--spaced">{project.name}</h1>
+
+    <p class="plugin__tagline">{project.tagline}</p>
+
+    <dl class="plugin__meta">
+      <div><dt>Status</dt><dd>{statusLabel(project)}</dd></div>
+      <div><dt>Year</dt><dd>{project.year}</dd></div>
+      <div><dt>Built with</dt><dd>{project.stack.join(', ')}</dd></div>
+    </dl>
+
+    <div class="plugin__ctas">
+      {
+        project.liveUrl ? (
+          <a class="cta--primary" href={project.liveUrl} target="_blank" rel="noopener">
+            Open {host(project.liveUrl)} →
+          </a>
+        ) : (
+          <span class="cta--secondary cta--static">Not public yet</span>
+        )
+      }
+      {
+        project.repoUrl && (
+          <a class="cta--secondary" href={project.repoUrl} target="_blank" rel="noopener">
+            Source on GitHub
+          </a>
+        )
+      }
+    </div>
+
+    <div class="prose plugin__body">
+      <h2>What it is</h2>
+      {project.intro.map((p) => <p>{p}</p>)}
+
+      <h2>What it does</h2>
+      <ul>
+        {
+          project.features.map((f) => (
+            <li>
+              <strong>{f.title}.</strong> {f.text}
+            </li>
+          ))
+        }
+      </ul>
+
+      <h2>How it was built</h2>
+      {project.build.map((p) => <p>{p}</p>)}
+    </div>
+
+    {
+      project.shots.length > 0 && (
+        <section class="plugin__shots">
+          <h2 class="eyebrow ruled">Screenshots</h2>
+          {project.shots.map((caption, i) => (
+            <figure class="shot">
+              <img
+                src={`/lab/${project.slug}/shot-${i + 1}.png`}
+                alt={caption}
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption class="figure__caption">
+                {i + 1}. {caption}
+              </figcaption>
+            </figure>
+          ))}
+        </section>
+      )
+    }
+
+    <section class="plugin__support">
+      <h2 class="eyebrow ruled">Questions</h2>
+      <p>
+        Happy to go into how any of this was built:
+        <a class="link-plain" href={`mailto:${SITE.email}`}>{SITE.email}</a>, or
+        <a class="link-plain" href="/contact/">the contact page</a>.
+      </p>
+    </section>
+  </article>
+</BaseLayout>
