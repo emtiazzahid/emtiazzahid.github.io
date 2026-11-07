@@ -319,7 +319,7 @@ export const PLUGINS: Plugin[] = [
     version: '1.0.0',
     requiresWp: '6.6',
     requiresPhp: '7.4',
-    status: 'review',
+    status: 'live',
     intro: [
       'Bloatwright answers one question: which plugins make this site slow, and by how much? Click Run profile and it requests a handful of typical pages from your own server, several times each, with a profiler attached to those requests only, then charges the time, queries and kilobytes to the plugin that caused them.',
       'Pick a plugin and re-run the same pages with it filtered out of the profiling requests only. You see the before and after of every page without deactivating anything for visitors.',
