@@ -223,7 +223,7 @@ export const PLUGINS: Plugin[] = [
     fullName: 'Hoverbuy – Sticky Add to Cart Bar for WooCommerce',
     tagline:
       'Shows a sticky add to cart bar with image, price, quantity and button once the product page\'s own Add to cart button scrolls away, variable products included.',
-    version: '1.0.0',
+    version: '1.0.1',
     requiresWp: '6.6',
     requiresPhp: '7.4',
     status: 'live',
