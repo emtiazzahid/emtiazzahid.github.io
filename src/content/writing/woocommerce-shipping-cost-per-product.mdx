@@ -1,0 +1,93 @@
+---
+title: How to set a shipping cost per product in WooCommerce
+date: 2026-11-26
+lede: "How to give each WooCommerce product its own shipping cost: what shipping classes can do, where they stop scaling, and how per-product rules work."
+---
+
+The shipping line on the order is wrong. A customer bought a sofa and four plant pots, checkout charged the same $12 it charges for a cushion, and the freight company's invoice for the sofa arrives next week. Or the reverse: someone ordered a packet of seeds and paid a rate that was set with sofas in mind.
+
+Both happen when the shipping price is set for the whole cart and the real cost is set by the item.
+
+## Why cart-based rates go wrong
+
+Most shipping setups price the cart: one flat rate, a rate by order total, or a rate by weight. That works when every product travels the same way. It breaks when some products need their own way to travel.
+
+A sofa goes by freight with a two-person delivery, and that costs the same whether a cushion rides along or not. A tall plant needs a deep box and a courier that won't leave it in a cold van; a packet of seeds fits in an envelope. A framed print needs a crate. A drop-shipped item comes with the supplier's shipping charge already set, and you want to pass it on exactly.
+
+The order total says nothing about any of that: a $300 rug and a $300 lamp cost different amounts to ship. Weight misses size: a rattan armchair is light and still fills half a van. In each case the cost belongs to the product, so the product is where it should be set.
+
+## What WooCommerce does on its own
+
+Core WooCommerce has one tool for this: shipping classes. Create them under WooCommerce → Settings → Shipping → Classes, for example "Bulky" and "Plants", then pick one on each product under Product data → Shipping → Shipping class.
+
+The prices live in the Flat rate method. Open a zone under WooCommerce → Settings → Shipping → Shipping zones and edit its Flat rate. Once classes exist, there's a "Shipping class costs" section with one field per class, plus "No shipping class cost" for products without one. A blank field charges nothing for that class. The main Cost field is charged on top of whatever the classes add.
+
+Each field takes a number or a small formula:
+
+```
+Cost                              0
+"Bulky" shipping class cost       45 * [qty]
+"Plants" shipping class cost      8 + 3 * [qty]
+No shipping class cost            5
+Calculation type                  Per class
+```
+
+In a class field, `[qty]` is the number of items in the cart with that class, and `[cost]` is the total price of those items. In the main Cost field, both cover every item that needs shipping. `[fee percent="10" min_fee="20"]` charges a percentage of `[cost]` with a minimum, and `max_fee` sets a maximum.
+
+"Calculation type" decides what happens when the cart holds more than one class. "Per class", the default, charges every class and adds them up. "Per order" charges only the most expensive class.
+
+For a store with four or five kinds of item, this is enough, and it costs nothing. Start there.
+
+## Where shipping classes stop scaling
+
+**One class per price.** A product has exactly one shipping class, and a class has one cost per Flat rate. So every distinct shipping price needs its own class. If your supplier charges 30 different delivery amounts across 60 products, that's 30 classes, and every Flat rate lists a field for each.
+
+**One zone per price region.** Class costs belong to a Flat rate inside a zone, and an address matches only one zone: the first in the list that fits. To charge more for the same sofa in Alaska than in Ohio, you need an Alaska zone with its own Flat rate and every class cost typed in again. A zone can be limited to states or postcodes, so pricier postcodes mean more zones too. Thirty classes in five zones is 150 class cost fields, and changing one product's price means finding its class and editing it in every zone.
+
+**Variations can only switch class.** A variation has its own Shipping class dropdown, set to "Same as parent" by default. That's fine when the large size fits an existing class. There's no shipping cost field on the variation itself.
+
+**Per order undercharges mixed bulky carts.** A sofa in a "Sofa" class and a table in a "Table" class are two freight deliveries, but "Per order" charges only the dearer class. "Per class" adds them, which is usually what you want.
+
+**Free shipping ignores all of it.** Free shipping set to require "A minimum order amount" is checked against the cart subtotal, and WooCommerce lists it beside your other rates and lets the customer choose. A sofa that lifts the cart over the minimum ships free unless something hides that rate.
+
+## How per-product rules work
+
+The other approach keeps the price on the product. Each product carries a short table of rules, and each rule pairs a destination with a cost.
+
+**A rule has two costs.** A line cost is charged once per cart line, whatever the quantity: the crate, the handling, the supplier's per-order charge. An item cost is charged per unit. A line's shipping is its line cost plus item cost × quantity, and the cart's shipping is the sum of its lines.
+
+**Destinations match like zones.** A rule names a country, a state or a postcode, or nothing, which means anywhere. Postcodes are easiest to manage when they accept what zones accept: exact values, wildcards like `PE*` and ranges like `1000...1999`.
+
+**The most specific rule wins.** A postcode rule beats a state rule, which beats a country rule, which beats an "any" rule. A product can say "United States: 149, Alaska: 349", and an Alaska address gets 349 while every other state still gets 149.
+
+**Something has to happen when no rule matches.** A product can have rules but none for this address. Either charge a fallback cost, or don't offer the rate there.
+
+**Mixed carts need a decision.** Some products in the cart may have no rules. You can charge nothing for them under the per-product rate, which is fine when they're small enough to ride along. You can stop offering the per-product rate whenever the cart has one, so your normal methods take over. Or you can add each product's cost on top of your normal rate, so ordinary items pay the Flat rate and the sofa pays its own way. What you don't want is two rates side by side where one ignores half the cart, because the customer will pick the cheaper one.
+
+**Free shipping needs a decision too.** Either free shipping stays free whatever is in the cart, or a product with its own shipping cost hides it. Neither is wrong, but pick one on purpose.
+
+## A worked example
+
+A US store sells sofas and ceramic plant pots. Their rules:
+
+```
+Sofa
+  United States             line 0    item 149
+  United States, Alaska     line 0    item 349
+  United States, Hawaii     line 0    item 399
+
+Plant pot
+  Any country               line 8    item 3
+```
+
+A customer in California orders one sofa and four pots. Neither state rule applies, so the sofa uses the United States rule: 0 + 149 × 1 = 149. The pots use the "any" rule: 8 + 3 × 4 = 20. Shipping is 169.
+
+The same cart to Alaska: the Alaska rule is more specific than the United States rule, so the sofa costs 349, the pots still cost 20, and shipping is 369. Two sofas to Alaska would add another 349.
+
+With shipping classes, the same result takes a "Sofa" class, a "Pots" class and three zones (Alaska, Hawaii and the rest of the US, in that order), each with its own Flat rate and both class costs filled in. That's manageable for two products. It's the 60th product with its own freight price that makes a table on the product the easier place to keep it.
+
+## Setting it on the product
+
+I built Shipeach, a free plugin on WordPress.org, to do this in WooCommerce. Each product gets a rules table under Product data → Shipping, below the shipping class, with country, state, postcode, line cost and item cost; a variation can tick "Override shipping rules" to use its own, and the most specific matching rule wins. You can add "Per Product Shipping" to a zone as its own method, with default costs for addresses no rule matches, a setting for products without per-product shipping, and options to hide Free Shipping and Local Pickup. Or turn on one option to add the per-product costs on top of your other methods; Free Shipping is never changed.
+
+It's on [WordPress.org](https://wordpress.org/plugins/shipeach-per-product-shipping-for-woocommerce/), and there's more on [its page here](/plugins/shipeach-per-product-shipping-for-woocommerce/).

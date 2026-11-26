@@ -1,0 +1,99 @@
+---
+title: How to add a WooCommerce sticky add to cart bar that works on mobile
+date: 2026-11-26
+lede: Why the Add to cart button scrolls out of reach on long WooCommerce product pages, especially on phones, and what a sticky bar has to get right to bring it back.
+---
+
+On a phone, the gallery fills the first screen of a WooCommerce product page. Then come the title, price, short description and the Add to cart button, and below them the description, reviews and related products. A shopper who reads the reviews and decides to buy has to scroll all the way back up.
+
+A sticky add to cart bar keeps a way to buy on screen. Done carelessly, it becomes a second way to buy that ignores the chosen size, resets the quantity, covers the theme's menu or sits on top of the side cart.
+
+## What the bar should and shouldn't do
+
+It should appear once the shopper has scrolled past the real button, show enough to act on (on a phone, the image, price and button) and do exactly what the real button does.
+
+It shouldn't appear on page load next to the button it copies, send its own add-to-cart request, cover a header, a bottom navigation bar or a cart drawer, move focus by itself, or cost more than one small script.
+
+## Show it once the real button has scrolled past
+
+A fixed scroll offset, say 400 pixels, is a guess. On a phone with a tall gallery the button can sit 900 pixels down, so the bar arrives before the shopper has seen the real one.
+
+Watch the button itself with `IntersectionObserver`, and show the bar when the button is out of view and above the screen. If it's below, the shopper hasn't reached it yet.
+
+An observer only reports crossings, though. On a phone, the "customer reviews" link by the stars can be on screen while the button below it isn't. Tap it and the page jumps past the button without the button ever being visible, so nothing fires. Check the button's position when the page scrolls too.
+
+In classic templates the button is `.single_add_to_cart_button` inside `form.cart`, for simple, variable, grouped and external products. Block themes get the same markup from the Add to Cart Form block, which WooCommerce's own Single Product template uses, because it runs the same PHP templates. The newer Add to Cart with Options block differs: its variation picker doesn't fire the events below, and unless an extension adds fields to the form or the store redirects to the cart after adding, the form has no `cart` class.
+
+## Press the real button
+
+The bar's button should click the real one. The product form already holds the quantity, the `variation_id` that WooCommerce's variation script fills in, and any fields an add-on plugin put there. WooCommerce reads them from the posted form and runs its `woocommerce_add_to_cart_validation` filter, and add-on plugins read their fields from the same request. A bar that sends its own request with a product ID and a quantity skips all of that.
+
+Click it; don't call `form.submit()`. On a simple product the `add-to-cart` value is on the button itself, and `submit()` doesn't send the button's name and value, so nothing gets added. `submit()` also skips the form's submit handlers, while a click runs whatever a theme or side cart attached to the button.
+
+Don't click it for a variable product before a variation is chosen. WooCommerce answers that with a browser alert. Have the bar's button read "Choose options" instead, scroll back to the form and focus the first option. And an out-of-stock simple product gets no form at all, so it gets no bar either.
+
+## Follow the variation and the quantity
+
+WooCommerce's variation script triggers jQuery events on the form: `found_variation` with the variation's data when the chosen options match one, and `reset_data` when they're cleared, incomplete or match nothing. The data includes `price_html`, `availability_html`, `is_purchasable`, `is_in_stock`, `min_qty` and `max_qty`, which is all the bar needs. When a swatch plugin sets WooCommerce's own selects and triggers `change`, the same events follow, so listen to them rather than reading the selects.
+
+The form's quantity box is `input[name="quantity"]` with the product's `min`, `max` and `step`, and WooCommerce changes the limits and clamps the value when a variation is found. Copy the limits to the bar's box and mirror the value both ways, listening with jQuery as well: a plus or minus button that triggers `change` through jQuery is invisible to `addEventListener`. When the form's box is hidden, as it is when the minimum and maximum are equal, leave the quantity out of the bar.
+
+## Stay out of the way on a phone
+
+The bottom of the screen is easiest to reach with a thumb, and also where a theme's fixed navigation bar may sit. Measure what's pinned to that edge each time the bar appears and sit next to it, not on top. At the top, do the same for a sticky header and the WordPress admin bar.
+
+Add space at the end of the page equal to the bar's height, or the footer's last links stay underneath it. Print the bar near the end of `body`: a `position: fixed` element inside an ancestor with a CSS `transform` is fixed to that ancestor, not to the screen. On a narrow screen, keep the image, price and button and drop the rest.
+
+Hide the bar while a cart drawer is open. A side cart that puts a class on `html` or `body` while it's open can be caught with a `MutationObserver` on those elements' `class` attribute. WooCommerce's current Mini-Cart drawer adds no class; it sets an inline `overflow: hidden` on `body` instead.
+
+## Accessibility and weight
+
+Make the bar a labelled region (`role="region"` with an `aria-label`) holding a real `button`. Hide it with `visibility: hidden` or `display: none`, because a bar slid away with `transform` alone can still take focus. Don't move focus to it, don't slide it away while it holds keyboard focus, and switch the animation off under `prefers-reduced-motion: reduce`.
+
+Announce "Added to cart" from a `role="status"` element. The classic form reloads the page, but code that adds without a reload has a reason to trigger WooCommerce's `added_to_cart` event on `body`: WooCommerce's cart fragments script listens for it to keep its cached cart in step.
+
+Load one small script and stylesheet only where the bar is shown. The bar needs no AJAX of its own: variation data arrives with `found_variation`, from the page or, past 30 variations, from WooCommerce's own request.
+
+## Doing it with a few lines of code
+
+For a simple product the core fits in one snippet for a small plugin or a child theme:
+
+```php
+add_action( 'wp_footer', function () {
+	$product = is_product() ? wc_get_product( get_queried_object_id() ) : null;
+	if ( ! $product || ! $product->is_type( 'simple' ) || ! $product->is_purchasable() || ! $product->is_in_stock() ) {
+		return;
+	}
+	?>
+	<div id="myprefix-sticky-atc" role="region" aria-label="<?php esc_attr_e( 'Add to cart bar', 'myprefix' ); ?>" hidden>
+		<?php echo wp_kses_post( $product->get_price_html() ); ?>
+		<button type="button" class="button alt"><?php echo esc_html( $product->single_add_to_cart_text() ); ?></button>
+	</div>
+	<style>
+		#myprefix-sticky-atc { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9990; padding: 10px 16px; background: #fff; }
+	</style>
+	<script>
+		( () => {
+			const bar  = document.getElementById( 'myprefix-sticky-atc' );
+			const real = document.querySelector( 'form.cart .single_add_to_cart_button' );
+			if ( ! real ) {
+				return;
+			}
+			new IntersectionObserver( ( entries ) => {
+				const last = entries.pop();
+				bar.hidden = last.isIntersecting || last.boundingClientRect.top > 0;
+			} ).observe( real );
+			bar.querySelector( 'button' ).addEventListener( 'click', () => real.click() );
+		} )();
+	</script>
+	<?php
+} );
+```
+
+It shows the bar once the real button is above the screen and clicks that button, so WooCommerce adds what the form holds. It leaves out the rest of this list: variable products, a quantity box, fixed headers and bottom bars, the jump past the button, cart drawers and the added message.
+
+## Doing it with a plugin
+
+I built Hoverbuy, a free plugin, along these lines. By default its bar appears once the real button has scrolled past, clicks that button, follows the variation through `found_variation` and `reset_data`, and mirrors the form's quantity and its limits. It sits next to a fixed header or bottom navigation bar, hides while a side cart or WooCommerce's Mini-Cart drawer is open, works with the Add to Cart with Options block as well as the classic form, uses a compact layout on phones, and loads one script with no dependencies only on product pages where it's shown.
+
+It's on [WordPress.org](https://wordpress.org/plugins/hoverbuy-sticky-add-to-cart-bar-for-woocommerce/), and there's more on [its page here](/plugins/hoverbuy-sticky-add-to-cart-bar-for-woocommerce/).
