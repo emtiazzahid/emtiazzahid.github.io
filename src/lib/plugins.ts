@@ -316,7 +316,7 @@ export const PLUGINS: Plugin[] = [
     fullName: 'Bloatwright – Performance Profiler & Site Speed Audit',
     tagline:
       'Measures the PHP time, database queries, front-end assets, autoloaded options and cron load of every plugin on real pages.',
-    version: '1.0.0',
+    version: '1.0.1',
     requiresWp: '6.6',
     requiresPhp: '7.4',
     status: 'live',
